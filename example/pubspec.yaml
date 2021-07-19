@@ -1,0 +1,8 @@
+name: type_plus_example
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  type_plus:
+    path: ../
