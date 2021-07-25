@@ -24,8 +24,10 @@ void main() {
   myFunction<Person>(); // prints "Hi!"
   myFunction<Box<int>>(); // prints "Box of ints"
 
-  // invoke a generic function with the correct type argument
-  personType.call(<T>() => print(T)); // prints: "Person"
+  // invoke a generic function with the full type
+  boxOfString.call(<T>() => print(T)); // prints: "Box<String>"
+  // invoke a generic function with the type parameters
+  boxOfString.callWithParams(<T>() => print(T)); // prints: "String"
 }
 
 void myFunction<T>() {

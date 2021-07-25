@@ -10,7 +10,9 @@ extension TypePlus on Type {
 
   String get id => TypeInfo.id(this);
 
-  T call<T>(T Function<U>() fn) => _resolved.call(fn);
+  T call<T>(T Function<U>() fn) => _resolved.call(value: fn);
+  T callWithParams<T>(Function fn, {dynamic value}) =>
+      _resolved.call(fn: fn, value: value);
 
   static void add<T>() => typesMap.add((f) => f<T>());
   static void addFactory(Function factory) => typesMap.add(factory);

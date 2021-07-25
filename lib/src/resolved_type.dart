@@ -26,7 +26,7 @@ class ResolvedType {
   List<ResolvedType> args;
 
   ResolvedType(this.factory, this.args) : base = factory(typeOf) {
-    resolvedTypes[call(typeOf)] = this;
+    resolvedTypes[call(value: typeOf)] = this;
   }
 
   factory ResolvedType.unresolved(TypeInfo info) {
@@ -40,33 +40,37 @@ class ResolvedType {
 
   static ResolvedType from<T>([Type? type]) => resolveType<T>(type);
 
-  T call<T>(T Function<U>() fn) => genericCall<T>(fn) as T;
+  dynamic call({Function? fn, dynamic value}) {
+    return genericCall(value: value, fn: fn);
+  }
 
-  dynamic genericCall<T>([dynamic value]) {
+  dynamic genericCall({dynamic value, Function? fn}) {
     var a = [...args];
 
-    dynamic call(dynamic Function<T>() next) {
+    dynamic call(Function next) {
       var t = a.removeAt(0);
-      return t.genericCall(next);
+      return t.genericCall(value: next);
     }
 
-    var fn = factory;
-    var v = value ?? typeOf;
+    var f = fn ?? factory;
+    var v = value;
+    var nn = v != null;
 
     if (args.isEmpty) {
-      return fn(v);
+      return nn ? f(v) : f();
     } else if (args.length == 1) {
-      return call(<A>() => fn<A>(v));
+      return call(<A>() => nn ? f<A>(v) : f<A>());
     } else if (args.length == 2) {
-      return call(<A>() => call(<B>() => fn<A, B>(v)));
+      return call(<A>() => call(<B>() => nn ? f<A, B>(v) : f<A, B>()));
     } else if (args.length == 3) {
-      return call(<A>() => call(<B>() => call(<C>() => fn<A, B, C>(v))));
-    } else if (args.length == 4) {
       return call(<A>() =>
-          call(<B>() => call(<C>() => call(<D>() => fn<A, B, C, D>(v)))));
+          call(<B>() => call(<C>() => nn ? f<A, B, C>(v) : f<A, B, C>())));
+    } else if (args.length == 4) {
+      return call(<A>() => call(<B>() => call(
+          <C>() => call(<D>() => nn ? f<A, B, C, D>(v) : f<A, B, C, D>()))));
     } else if (args.length == 5) {
-      return call(<A>() => call(<B>() =>
-          call(<C>() => call(<D>() => call(<E>() => fn<A, B, C, D, E>(v))))));
+      return call(<A>() => call(<B>() => call(<C>() => call(<D>() =>
+          call(<E>() => nn ? f<A, B, C, D, E>(v) : f<A, B, C, D, E>())))));
     } else {
       throw Exception(
           'TypePlus only supports generic classes with up to 5 type arguments.');
@@ -100,7 +104,8 @@ ResolvedType resolveType<T>([Type? t]) {
       );
 
   var options = getOptions(match).map(resolveOption);
-  var resolved = options.where((o) => o.call(typeOf) == type).firstOrNull;
+  var resolved =
+      options.where((o) => o.call(value: typeOf) == type).firstOrNull;
 
   if (resolved != null) {
     resolvedTypes[type] = resolved;
