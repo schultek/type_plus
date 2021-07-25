@@ -6,32 +6,32 @@ class Box<T> {}
 
 void main() {
   // first, specify all classes using this syntax
-  TypePlus.add((f) => f<Person>());
+  TypePlus.addFactory((f) => f<Person>());
+  // or this syntax sugar for non-generic classes
+  TypePlus.add<Person>();
+
   // for generic classes, use a generic function
-  TypePlus.add(<T>(f) => f<Box<T>>());
+  TypePlus.addFactory(<T>(f) => f<Box<T>>());
 
   // get a type variable
   Type personType = Person;
   // for generic types, use this helper function
   Type boxOfString = typeOf<Box<String>>();
 
-  print(personType.base); // the base type: Person
+  print(boxOfString.base); // the base type: Box<dynamic>
   print(boxOfString.args); // the type arguments: [String]
 
   myFunction<Person>(); // prints "Hi!"
-  myFunction<Box<int>>(); // prints "Box of numbers"
+  myFunction<Box<int>>(); // prints "Box of ints"
+
+  // invoke a generic function with the correct type argument
+  personType.call(<T>() => print(T)); // prints: "Person"
 }
 
 void myFunction<T>() {
-  print("Called with $T");
-
   if (T.base == Person) {
     print("Hi!");
   } else if (T.base == Box) {
-    if (T.args.first == int) {
-      print("Box of numbers");
-    } else {
-      print("Box of ${T.args.first}s");
-    }
+    print("Box of ${T.args.first}s");
   }
 }

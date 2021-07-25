@@ -1,6 +1,7 @@
 import 'type_info.dart';
 import 'type_plus.dart';
 import 'types_builder.dart';
+import 'unresolved_type.dart';
 import 'utils.dart';
 
 class TypeMatch {
@@ -8,7 +9,7 @@ class TypeMatch {
   List<TypeMatch> args;
 
   TypeMatch.fromInfo(TypeInfo info)
-      : bases = typesMap[info.type] ?? {},
+      : bases = getTypeFactories(info.type),
         args = info.args.map((i) => TypeMatch.fromInfo(i)).toList();
 }
 
@@ -28,9 +29,16 @@ class ResolvedType {
     resolvedTypes[call(typeOf)] = this;
   }
 
+  factory ResolvedType.unresolved(TypeInfo info) {
+    return ResolvedType(
+      UnresolvedType.factory(info.args.length),
+      info.args.map((i) => ResolvedType.unresolved(i)).toList(),
+    );
+  }
+
   List<Type> get argsAsTypes => args.map((p) => p.base).toList();
 
-  static ResolvedType? from<T>([Type? type]) => resolveType<T>(type);
+  static ResolvedType from<T>([Type? type]) => resolveType<T>(type);
 
   T call<T>(T Function<U>() fn) => genericCall<T>(fn) as T;
 
@@ -61,7 +69,7 @@ class ResolvedType {
           call(<C>() => call(<D>() => call(<E>() => fn<A, B, C, D, E>(v))))));
     } else {
       throw Exception(
-          'TypePlus only supports generic classes with upt to 5 type arguments.');
+          'TypePlus only supports generic classes with up to 5 type arguments.');
     }
   }
 
@@ -71,11 +79,11 @@ class ResolvedType {
 
 final Map<Type, ResolvedType> resolvedTypes = {};
 
-ResolvedType? resolveType<T>([Type? t]) {
+ResolvedType resolveType<T>([Type? t]) {
   var type = t ?? T;
 
   if (resolvedTypes[type] != null) {
-    return resolvedTypes[type];
+    return resolvedTypes[type]!;
   }
 
   var info = TypeInfo.fromType(type);
@@ -92,5 +100,10 @@ ResolvedType? resolveType<T>([Type? t]) {
       );
 
   var options = getOptions(match).map(resolveOption);
-  return options.where((o) => o.call(typeOf) == type).firstOrNull;
+  var resolved = options.where((o) => o.call(typeOf) == type).firstOrNull;
+
+  if (resolved != null) {
+    resolvedTypes[type] = resolved;
+  }
+  return resolved ?? ResolvedType.unresolved(info);
 }

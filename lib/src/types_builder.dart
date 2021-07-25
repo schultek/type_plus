@@ -1,3 +1,5 @@
+import 'package:type_plus/src/type_plus.dart';
+
 import 'type_info.dart';
 
 final typesMap = TypesBuilder.from([
@@ -19,6 +21,15 @@ final typesMap = TypesBuilder.from([
   (f) => f<Null>(),
   (f) => f<void>(),
 ]);
+
+final Set<TypeProvider> typeProviders = {};
+
+Set<Function> getTypeFactories(String id) {
+  return typesMap[id] ??
+      typeProviders.fold<Set<Function>?>(
+          null, (t, p) => t ?? p.getFactories(id)) ??
+      {};
+}
 
 extension TypesBuilder on Map<String, Set<Function>> {
   static Map<String, Set<Function>> from(List<Function> list) {

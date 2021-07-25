@@ -1,23 +1,27 @@
 import 'resolved_type.dart';
+import 'type_info.dart';
 import 'types_builder.dart';
 
 extension TypePlus on Type {
-  ResolvedType? get _resolved => ResolvedType.from(this);
+  ResolvedType get _resolved => ResolvedType.from(this);
 
-  Type get base => _resolved?.base ?? this;
-  List<Type> get args => _resolved?.argsAsTypes ?? [];
+  Type get base => _resolved.base;
+  List<Type> get args => _resolved.argsAsTypes;
 
-  T call<T>(T Function<U>() fn) => _resolved?.call(fn) ?? fn();
+  String get id => TypeInfo.id(this);
 
-  static void add(Function factory) => typesMap.add(factory);
-  static void addAll(List<Function> factories) =>
+  T call<T>(T Function<U>() fn) => _resolved.call(fn);
+
+  static void add<T>() => typesMap.add((f) => f<T>());
+  static void addFactory(Function factory) => typesMap.add(factory);
+  static void addFactories(List<Function> factories) =>
       factories.forEach(typesMap.add);
-}
 
-extension ImplementsType on dynamic {
-  bool implements(Type t) {
-    return t._resolved?.call(<T>() => this is T) ?? false;
-  }
+  static void register(TypeProvider provider) => typeProviders.add(provider);
 }
 
 Type typeOf<T>() => T;
+
+abstract class TypeProvider {
+  Set<Function>? getFactories(String id);
+}
