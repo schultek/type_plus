@@ -1,31 +1,39 @@
+import 'package:type_plus/src/types_registry.dart';
+
 import 'type_info.dart';
 import 'type_plus.dart';
-import 'types_builder.dart';
 import 'unresolved_type.dart';
 import 'utils.dart';
 
 class TypeMatch {
-  Set<Function> bases;
+  List<Function> bases;
   List<TypeMatch> args;
+  bool isNullable;
 
   TypeMatch.fromInfo(TypeInfo info)
-      : bases = getTypeFactories(info.type),
-        args = info.args.map((i) => TypeMatch.fromInfo(i)).toList();
+      : bases = typeRegistry.getFactoriesByName(info.type),
+        args = info.args.map((i) => TypeMatch.fromInfo(i)).toList(),
+        isNullable = info.isNullable;
 }
 
 class TypeOption {
   Function base;
   List<TypeOption> args;
+  bool isNullable;
 
-  TypeOption(this.base, this.args);
+  TypeOption(this.base, this.args, {this.isNullable = false});
 }
 
 class ResolvedType {
   Type base;
   Function factory;
   List<ResolvedType> args;
+  bool isNullable;
 
-  ResolvedType(this.factory, this.args) : base = factory(typeOf) {
+  static final Map<Type, ResolvedType> resolvedTypes = {};
+
+  ResolvedType(this.factory, this.args, {this.isNullable = false})
+      : base = factory(typeOf) {
     resolvedTypes[call(value: typeOf)] = this;
   }
 
@@ -38,9 +46,47 @@ class ResolvedType {
 
   List<Type> get argsAsTypes => args.map((p) => p.base).toList();
 
-  static ResolvedType from<T>([Type? type]) => resolveType<T>(type);
+  String get id {
+    var nullSuffix = isNullable ? '?' : '';
+    if (args.isNotEmpty && args.any((t) => t.call(value: typeOf) != dynamic)) {
+      return '${base.id}<${args.map((r) => r.id).join(',')}>$nullSuffix';
+    } else {
+      return (typeRegistry.idOf(base) ?? '') + nullSuffix;
+    }
+  }
+
+  static ResolvedType from<T>([Type? t]) {
+    var type = t ?? T;
+
+    if (resolvedTypes[type] != null) {
+      return resolvedTypes[type]!;
+    }
+
+    var info = TypeInfo.fromType(type);
+    var match = TypeMatch.fromInfo(info);
+
+    List<TypeOption> getOptions(TypeMatch match) => [
+          for (var o in match.args.map(getOptions).toList().power())
+            for (var b in match.bases)
+              TypeOption(b, o, isNullable: match.isNullable),
+        ];
+
+    ResolvedType resolveOption(TypeOption o) => ResolvedType(
+          o.base,
+          o.args.map(resolveOption).toList(),
+          isNullable: o.isNullable,
+        );
+
+    var options = getOptions(match).map(resolveOption);
+    var resolved =
+        options.where((o) => o.call(value: typeOf) == type).firstOrNull;
+    return resolved ?? ResolvedType.unresolved(info);
+  }
 
   dynamic call({Function? fn, dynamic value}) {
+    if (isNullable && fn == null && value is Function) {
+      return genericCall(value: <T>() => value<T?>());
+    }
     return genericCall(value: value, fn: fn);
   }
 
@@ -79,36 +125,4 @@ class ResolvedType {
 
   @override
   String toString() => 'ResolvedType{base: $base, args: $args}';
-}
-
-final Map<Type, ResolvedType> resolvedTypes = {};
-
-ResolvedType resolveType<T>([Type? t]) {
-  var type = t ?? T;
-
-  if (resolvedTypes[type] != null) {
-    return resolvedTypes[type]!;
-  }
-
-  var info = TypeInfo.fromType(type);
-  var match = TypeMatch.fromInfo(info);
-
-  List<TypeOption> getOptions(TypeMatch match) => [
-        for (var o in match.args.map(getOptions).toList().power())
-          for (var b in match.bases) TypeOption(b, o),
-      ];
-
-  ResolvedType resolveOption(TypeOption o) => ResolvedType(
-        o.base,
-        o.args.map(resolveOption).toList(),
-      );
-
-  var options = getOptions(match).map(resolveOption);
-  var resolved =
-      options.where((o) => o.call(value: typeOf) == type).firstOrNull;
-
-  if (resolved != null) {
-    resolvedTypes[type] = resolved;
-  }
-  return resolved ?? ResolvedType.unresolved(info);
 }

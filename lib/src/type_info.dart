@@ -8,13 +8,16 @@ class TypeInfo {
   String toString() =>
       '$type${args.isNotEmpty ? '<${args.join(', ')}>${isNullable ? '?' : ''}' : ''}';
 
-  static String id<T>([Type? t]) {
+  static String name<T>([Type? t]) {
     var input = (t ?? T).toString();
     return input.split('<')[0];
   }
 
   static TypeInfo fromType<T>([Type? type]) {
-    var typeString = (type ?? T).toString();
+    return fromString((type ?? T).toString());
+  }
+
+  static TypeInfo fromString(String typeString) {
     var curr = TypeInfo();
 
     for (var i = 0; i < typeString.length; i++) {
