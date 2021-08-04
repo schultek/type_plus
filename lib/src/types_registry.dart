@@ -1,49 +1,58 @@
-import 'package:type_plus/src/resolved_type.dart';
-import 'package:type_plus/src/type_plus.dart';
-
+import 'resolved_type.dart';
 import 'type_info.dart';
+import 'type_plus.dart';
 
-final typeRegistry = TypeRegistry.from([
-  (f) => f<dynamic>(),
-  (f) => f<bool>(),
-  (f) => f<int>(),
-  (f) => f<double>(),
-  (f) => f<num>(),
-  (f) => f<String>(),
-  <T>(f) => f<List<T>>(),
-  <T>(f) => f<Iterable<T>>(),
-  <T>(f) => f<Set<T>>(),
-  <K, V>(f) => f<Map<K, V>>(),
-  (f) => f<DateTime>(),
-  (f) => f<Type>(),
-  (f) => f<Runes>(),
-  (f) => f<Symbol>(),
-  (f) => f<Object>(),
-  (f) => f<Null>(),
-  (f) => f<void>(),
-]);
+Function ff<T>() => (f) => f<T>();
+var ffObj = ff<Object>();
+
+final _sdkTypes = <Function, Iterable<Function>>{
+  (f) => f<dynamic>(): {},
+  (f) => f<void>(): {},
+  (f) => f<Null>(): {},
+  (f) => f<Object>(): {},
+  (f) => f<bool>(): {ffObj},
+  <T>(f) => f<Comparable<T>>(): {ffObj},
+  (f) => f<num>(): {ff<Comparable<num>>()},
+  (f) => f<int>(): {ff<num>()},
+  (f) => f<double>(): {ff<num>()},
+  (f) => f<Pattern>(): {ffObj},
+  (f) => f<String>(): {ff<Comparable<String>>(), ff<Pattern>()},
+  <T>(f) => f<Iterable<T>>(): {ffObj},
+  <T>(f) => f<List<T>>(): {<T>(f) => f<Iterable<T>>()},
+  <T>(f) => f<Set<T>>(): {<T>(f) => f<Iterable<T>>()},
+  <K, V>(f) => f<Map<K, V>>(): {ffObj},
+  (f) => f<DateTime>(): {ff<Comparable<DateTime>>()},
+  (f) => f<Type>(): {ffObj},
+  (f) => f<Runes>(): {ff<Iterable<int>>()},
+  (f) => f<Symbol>(): {ffObj},
+};
 
 class TypeRegistry {
   final Map<String, Set<String>> _nameToId = {};
   final Map<String, Function> _idToFactory = {};
   final Map<int, String> _hashToId = {};
+  final Map<String, Set<Function>> _idToSuperFactory = {};
 
   final Set<TypeProvider> typeProviders = {};
 
-  TypeRegistry._();
-
-  factory TypeRegistry.from(List<Function> factories) {
-    var registry = TypeRegistry._();
-    factories.forEach(registry.add);
-    return registry;
+  static TypeRegistry? _instance;
+  static TypeRegistry get instance {
+    if (_instance == null) {
+      _instance = TypeRegistry._();
+      _sdkTypes.forEach((fn, st) => _instance!.add(fn, superTypes: st));
+    }
+    return _instance!;
   }
 
-  void add(Function factory, {String? id}) {
+  TypeRegistry._();
+
+  void add(Function factory, {String? id, Iterable<Function>? superTypes}) {
     Type type = factory(typeOf);
     var typeId = id ?? '${type.hashCode}';
     _idToFactory[typeId] = factory;
     (_nameToId[type.name] ??= {}).add(typeId);
     _hashToId[type.hashCode] = typeId;
+    _idToSuperFactory[typeId] = superTypes?.toSet() ?? {ffObj};
   }
 
   List<Function> getFactoriesByName(String name) {
@@ -74,6 +83,10 @@ class TypeRegistry {
           : ResolvedType.unresolved(info);
     }
 
-    return resolve(info).call(value: typeOf);
+    return resolve(info).reverse();
+  }
+
+  Set<Function> getSuperFactories(String id) {
+    return _idToSuperFactory[id] ?? {};
   }
 }

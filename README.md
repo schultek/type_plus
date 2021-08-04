@@ -2,6 +2,7 @@
 
 > Give your types superpowers and spice up your generics. Make types great again.
 
+type_plus is a utility package to bring some advanced capabilities to type variables and generic type arguments
 With type_plus you can easily deconstruct any type variable or generic type argument.
 
 ```dart
@@ -11,6 +12,8 @@ class Person {}
 
 class Box<T> {}
 
+abstract class Group extends Iterable<Person> {}
+
 void main() {
   // first, specify all types using this syntax
   TypePlus.addFactory((f) => f<Person>());
@@ -19,6 +22,8 @@ void main() {
 
   // for generic types, use a generic function
   TypePlus.addFactory(<T>(f) => f<Box<T>>());
+  // for extending classes, make sure to put all supertypes
+  TypePlus.add<Group>(superTypes: [typeOf<Iterable<Person>>()]);
 
   // get a type variable
   Type personType = Person;
@@ -34,10 +39,11 @@ void main() {
   myFunction<Person>(); // prints "Hi!"
   myFunction<Box<int>>(); // prints "Box of ints"
 
+  Function printType = <T>() => print(T);
   // invoke a generic function with the full type
-  boxOfString.call(<T>() => print(T)); // prints: "Box<String>"
-  // invoke a generic function with the type parameters
-  boxOfString.callWithParams(<T>() => print(T)); // prints: "String"
+  printType.callWith(typeArguments: [boxOfString]); // prints: "Box<String>"
+  // invoke a generic function with the type arguments
+  printType.callWith(typeArguments: boxOfString.args); // prints: "String"
 
   String boxId = boxOfString.base.id; // id of the base type
   String personId = personType.id;
@@ -45,6 +51,12 @@ void main() {
   // construct a new type by it's id
   Type newType = TypePlus.fromId('$boxId<$personId>');
   print(newType); // prints: "Box<Person>"
+
+  // check if a type implements another type
+  print(newType.implements(Box)); // prints: "true"
+  print((Group).implements(typeOf<Iterable<Person>>())); // prints: "true"
+  // or the other way around
+  print((num).implementedBy(int)); // prints: "true"
 }
 
 void myFunction<T>() {

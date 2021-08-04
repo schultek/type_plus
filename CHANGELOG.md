@@ -1,3 +1,9 @@
+# 0.3.0
+
+- Added generic function invocation
+- Added support for supertype checking
+- Reworked type parsing
+
 # 0.2.0
 
 - Added support for custom ids and type parsing
