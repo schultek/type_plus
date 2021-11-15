@@ -31,13 +31,12 @@ class ResolvedType {
   bool isNullable;
 
   static final Map<Type, ResolvedType> _resolvedTypes = {};
-  static final Map<ResolvedType, Type> _reverseTypes = {};
+
+  Type? _reverseType;
 
   ResolvedType(this.factory, this.args, {this.isNullable = false})
       : base = factory(typeOf) {
-    var reverseType = reverse();
-    _resolvedTypes[reverseType] = this;
-    _reverseTypes[this] = reverseType;
+    _resolvedTypes[reverse()] = this;
   }
 
   factory ResolvedType.unresolved(TypeInfo info) {
@@ -50,7 +49,7 @@ class ResolvedType {
   Function get nullAwareTypeOf => isNullable ? <T>() => typeOf<T?>() : typeOf;
 
   Type reverse() {
-    return _reverseTypes[this] ??
+    return _reverseType ??=
         TypeSwitcher.apply(factory, [nullAwareTypeOf], args);
   }
 
@@ -59,10 +58,14 @@ class ResolvedType {
   String get id {
     var nullSuffix = isNullable ? '?' : '';
     if (args.isNotEmpty && args.any((t) => t.reverse() != dynamic)) {
-      return '${base.id}<${args.map((r) => r.id).join(',')}>$nullSuffix';
+      return '${base.baseId}<${args.map((r) => r.id).join(',')}>$nullSuffix';
     } else {
-      return (TypeRegistry.instance.idOf(base) ?? '') + nullSuffix;
+      return '$baseId$nullSuffix';
     }
+  }
+
+  String get baseId {
+    return TypeRegistry.instance.idOf(base) ?? '';
   }
 
   static ResolvedType from<T>([Type? t]) {
@@ -99,7 +102,7 @@ class ResolvedType {
     if (t == dynamic) return true;
     if (t == base) return true;
 
-    var superFn = TypeRegistry.instance.getSuperFactories(base.id);
+    var superFn = TypeRegistry.instance.getSuperFactories(baseId);
 
     for (var fn in superFn) {
       var st = TypeSwitcher.apply(fn, [typeOf], args) as Type;

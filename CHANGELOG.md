@@ -1,3 +1,8 @@
+# 0.3.3
+
+- TypeProviders can now safely override primitive types
+- Fixed bug when using type bounds by adding Type.baseId getter
+
 # 0.3.2
 
 - Fixed reverse nullable type bug

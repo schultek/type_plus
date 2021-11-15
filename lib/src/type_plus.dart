@@ -19,6 +19,11 @@ extension TypePlus on Type {
   /// The unique id of a type
   String get id => _resolved.id;
 
+  /// The base id of a type
+  /// * This can be different to base.id when using type bounds
+  ///   and ensures to not contain any type arguments' ids
+  String get baseId => _resolved.baseId;
+
   /// Indicates if this type is nullable
   bool get isNullable => _resolved.isNullable;
 
