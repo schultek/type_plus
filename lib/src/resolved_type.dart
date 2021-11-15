@@ -47,8 +47,11 @@ class ResolvedType {
     );
   }
 
+  Function get nullAwareTypeOf => isNullable ? <T>() => typeOf<T?>() : typeOf;
+
   Type reverse() {
-    return _reverseTypes[this] ?? TypeSwitcher.apply(factory, [typeOf], args);
+    return _reverseTypes[this] ??
+        TypeSwitcher.apply(factory, [nullAwareTypeOf], args);
   }
 
   List<Type> get argsAsTypes => args.map((p) => p.base).toList();

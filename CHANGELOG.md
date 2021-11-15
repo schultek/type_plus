@@ -1,3 +1,11 @@
+# 0.3.2
+
+- Fixed reverse nullable type bug
+
+# 0.3.1
+
+- Updated readme
+
 # 0.3.0
 
 - Added generic function invocation

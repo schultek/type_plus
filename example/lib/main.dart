@@ -6,6 +6,18 @@ class Box<T> {}
 
 abstract class Group extends Iterable<Person> {}
 
+void checkType<T>() {
+  if (T.base == Person) {
+    print("Hi!");
+  } else if (T.base == Box) {
+    print("Box of ${T.args.first}s");
+  }
+}
+
+void printType<T>() {
+  print(T);
+}
+
 void main() {
   // first, specify all types using this syntax
   TypePlus.addFactory((f) => f<Person>());
@@ -28,10 +40,9 @@ void main() {
   print(boxOfString.base); // the base type: Box<dynamic>
   print(boxOfString.args); // the type arguments: [String]
 
-  myFunction<Person>(); // prints "Hi!"
-  myFunction<Box<int>>(); // prints "Box of ints"
+  checkType<Person>(); // prints "Hi!"
+  checkType<Box<int>>(); // prints "Box of ints"
 
-  Function printType = <T>() => print(T);
   // invoke a generic function with the full type
   printType.callWith(typeArguments: [boxOfString]); // prints: "Box<String>"
   // invoke a generic function with the type arguments
@@ -49,12 +60,4 @@ void main() {
   print((Group).implements(typeOf<Iterable<Person>>())); // prints: "true"
   // or the other way around
   print((num).implementedBy(int)); // prints: "true"
-}
-
-void myFunction<T>() {
-  if (T.base == Person) {
-    print("Hi!");
-  } else if (T.base == Box) {
-    print("Box of ${T.args.first}s");
-  }
 }
