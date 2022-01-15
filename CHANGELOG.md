@@ -1,3 +1,8 @@
+# 0.4.0
+
+- Update readme and example to Dart 2.15
+- Deprecate typeOf helper function
+
 # 0.3.3
 
 - TypeProviders can now safely override primitive types

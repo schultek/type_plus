@@ -21,7 +21,7 @@ your dart program.
 
 For basic, non-generic types you can do the following:
 ```dart
-TypePlus.add<MyClss>();
+TypePlus.add<MyClass>();
 ```
 
 For generic types, you have to specify a type factory. This is a special kind of function with the following syntax:
@@ -68,20 +68,20 @@ There are two ways you can get an instance of a `Type` in dart:
 	```
 
 2. **Type variable**  
-   Types can also be used as variables. When using a non-generic type, you can simply assign this type to a variable. When using generic types, you have to use a helper function.
+   Types can also be used as variables. 
+   
+   *Prior to Dart 2.15 when using generic types you have to use the `typeOf<T>()` helper function*
    
 	```dart
 	void main() {
-	  // simple type variable
 	  Type a = int;
-	  // using the helper function
-	  Type b = typeOf<List<int>>();  
+	  Type b = List<int>; // for dart < 2.15 instead do typeOf<List<int>>()
 	  
 	  String aName = a.name;
 	  String bName = b.name;
  
-      // simple types can also be used in expressions wrapped in ()
-      print((double).name);
+      // or use in expressions wrapped in ()
+      print((MyClass<String>).name);
 	}
 	```
 
@@ -95,7 +95,7 @@ Let's say we have the type `Map<String, int>`, then:
 
 ```dart
 void main() {
-  var type = typeOf<Map<String, int>>();
+  var type = Map<String, int>;
   
   String name = T.name; // = "Map<String, int>"
   
@@ -171,7 +171,7 @@ In order for this to work, you have to explicitly set the supertypes of any type
 class MyClass extends List<int> {}
 
 void main() {
-  var listType = typeOf<List<int>>();
+  var listType = List<int>;
   
   TypePlus.add<MyClass>(superTypes: [listType]);
   

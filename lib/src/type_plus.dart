@@ -55,9 +55,6 @@ extension TypePlus on Type {
   static Type fromId(String id) => TypeRegistry.instance.fromId(id);
 }
 
-/// Helper function to get a type variable from a generic type argument
-Type typeOf<T>() => T;
-
 /// A TypeProvider is used to handle types without needing to manually add their factory functions
 abstract class TypeProvider {
   /// Get a type factory from a type id

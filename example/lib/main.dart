@@ -27,12 +27,11 @@ void main() {
   // for generic types, use a generic function
   TypePlus.addFactory(<T>(f) => f<Box<T>>());
   // for extending classes, make sure to put all supertypes
-  TypePlus.add<Group>(superTypes: [typeOf<Iterable<Person>>()]);
+  TypePlus.add<Group>(superTypes: [Iterable<Person>]);
 
   // get a type variable
   Type personType = Person;
-  // for generic types, use this helper function
-  Type boxOfString = typeOf<Box<String>>();
+  Type boxOfString = Box<String>;
 
   print(personType.name); // the name of the type: Person
   print(personType.id); // the id of the type: (some unique number)
@@ -57,7 +56,7 @@ void main() {
 
   // check if a type implements another type
   print(newType.implements(Box)); // prints: "true"
-  print((Group).implements(typeOf<Iterable<Person>>())); // prints: "true"
+  print((Group).implements(Iterable<Person>)); // prints: "true"
   // or the other way around
   print((num).implementedBy(int)); // prints: "true"
 }

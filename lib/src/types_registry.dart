@@ -1,6 +1,7 @@
 import 'resolved_type.dart';
 import 'type_info.dart';
 import 'type_plus.dart';
+import 'utils.dart';
 
 Function ff<T>() => (f) => f<T>();
 var ffObj = ff<Object>();
