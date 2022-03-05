@@ -26,6 +26,8 @@ final _sdkTypes = <Function, Iterable<Function>>{
   (f) => f<Type>(): {ffObj},
   (f) => f<Runes>(): {ff<Iterable<int>>()},
   (f) => f<Symbol>(): {ffObj},
+  <T>(f) => f<Future<T>>(): {ffObj},
+  <T>(f) => f<Stream<T>>(): {ffObj},
 };
 
 class TypeRegistry {

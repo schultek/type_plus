@@ -1,3 +1,7 @@
+# 0.5.1
+
+- Added Future and Stream to default types
+
 # 0.5.0
 
 - Added provideTo method

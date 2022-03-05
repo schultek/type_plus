@@ -1,6 +1,6 @@
 name: type_plus
 description: Give your types superpowers and spice up your generics. Make types great again.
-version: 0.5.0
+version: 0.5.1
 repository: https://github.com/schultek/type_plus
 issue_tracker: https://github.com/schultek/type_plus/issues
 
