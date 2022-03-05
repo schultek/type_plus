@@ -1,3 +1,8 @@
+# 0.5.0
+
+- Added provideTo method
+- Improved performance for function invocations
+
 # 0.4.0
 
 - Update readme and example to Dart 2.15

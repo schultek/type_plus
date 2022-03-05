@@ -32,11 +32,15 @@ class ResolvedType {
 
   static final Map<Type, ResolvedType> _resolvedTypes = {};
 
-  Type? _reverseType;
+  late Function _resolvedFactory;
+  late Type _reverseType;
 
   ResolvedType(this.factory, this.args, {this.isNullable = false})
       : base = factory(typeOf) {
-    _resolvedTypes[reverse()] = this;
+    _resolvedFactory = TypeSwitcher.apply(factory,
+        [isNullable ? <T>() => (f) => f<T?>() : <T>() => (f) => f<T>()], args);
+    _reverseType = _resolvedFactory(typeOf);
+    _resolvedTypes[_reverseType] = this;
   }
 
   factory ResolvedType.unresolved(TypeInfo info) {
@@ -46,11 +50,12 @@ class ResolvedType {
     );
   }
 
-  Function get nullAwareTypeOf => isNullable ? <T>() => typeOf<T?>() : typeOf;
+  R provideTo<R>(R Function<U>() fn) {
+    return _resolvedFactory(fn);
+  }
 
   Type reverse() {
-    return _reverseType ??=
-        TypeSwitcher.apply(factory, [nullAwareTypeOf], args);
+    return _reverseType;
   }
 
   List<Type> get argsAsTypes => args.map((p) => p.base).toList();

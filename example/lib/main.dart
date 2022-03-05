@@ -43,7 +43,8 @@ void main() {
   checkType<Box<int>>(); // prints "Box of ints"
 
   // invoke a generic function with the full type
-  printType.callWith(typeArguments: [boxOfString]); // prints: "Box<String>"
+  boxOfString.provideTo(printType); // prints: "Box<String>"
+
   // invoke a generic function with the type arguments
   printType.callWith(typeArguments: boxOfString.args); // prints: "String"
 

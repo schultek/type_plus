@@ -27,6 +27,9 @@ extension TypePlus on Type {
   /// Indicates if this type is nullable
   bool get isNullable => _resolved.isNullable;
 
+  /// Calls the given function with this type provided as the single type argument
+  R provideTo<R>(R Function<U>() fn) => _resolved.provideTo(fn);
+
   /// Check if a type implements or extends another type
   /// e.g. int implements num, List implements Iterable
   bool implements<T>([Type? t]) => _resolved.implements(t ?? T);

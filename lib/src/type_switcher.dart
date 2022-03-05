@@ -4,7 +4,32 @@ import 'type_info.dart';
 class TypeSwitcher {
   static dynamic apply(
       Function fn, List<dynamic> params, List<ResolvedType> args) {
-    var fi = FunctionInfo.from(fn);
+    assert(() {
+      var fi = FunctionInfo.from(fn);
+
+      if (fi.args.length != args.length) {
+        throw ArgumentError(
+            'Function expects different amount of type arguments. Provided ${args.length}, but expected ${fi.args.length}.');
+      } else if (args.length > 5) {
+        throw ArgumentError(
+            'TypePlus only supports generic functions with up to 5 type arguments.');
+      }
+
+      if (fi.namedParams.isNotEmpty) {
+        throw ArgumentError("Function $fn cannot have named parameters.");
+      } else if (params.length < fi.params.length) {
+        throw ArgumentError(
+            "Function $fn must be called with at least ${fi.params.length} parameters.");
+      } else if (params.length > fi.params.length + fi.optionalParams.length) {
+        throw ArgumentError(
+            "Function $fn must be called with at most ${fi.params.length + fi.optionalParams.length} parameters.");
+      } else if (params.length > 5) {
+        throw ArgumentError(
+            'TypePlus only supports generic functions with up to 5 parameters.');
+      }
+
+      return true;
+    }());
 
     dynamic $args({
       Function()? $0,
@@ -28,7 +53,7 @@ class TypeSwitcher {
         }
       }
 
-      switch (fi.args.length) {
+      switch (args.length) {
         case 0:
           return $0?.call();
         case 1:
@@ -44,9 +69,6 @@ class TypeSwitcher {
         case 5:
           return call(<A>() => call(<B>() => call(<C>() =>
               call(<D>() => call(<E>() => $5?.call<A, B, C, D, E>())))));
-        default:
-          throw ArgumentError(
-              'TypePlus only supports generic functions with up to 5 type arguments.');
       }
     }
 
@@ -58,16 +80,6 @@ class TypeSwitcher {
       Function(dynamic, dynamic, dynamic, dynamic)? $4,
       Function(dynamic, dynamic, dynamic, dynamic, dynamic)? $5,
     }) {
-      if (fi.namedParams.isNotEmpty) {
-        throw ArgumentError("Function $fn cannot have named parameters.");
-      } else if (params.length < fi.params.length) {
-        throw ArgumentError(
-            "Function $fn must be called with at least ${fi.params.length} parameters.");
-      } else if (params.length > fi.params.length + fi.optionalParams.length) {
-        throw ArgumentError(
-            "Function $fn must be called with at most ${fi.params.length + fi.optionalParams.length} parameters.");
-      }
-
       switch (params.length) {
         case 0:
           return $0?.call();
@@ -82,9 +94,6 @@ class TypeSwitcher {
         case 5:
           return $5?.call(
               params[0], params[1], params[2], params[3], params[4]);
-        default:
-          throw ArgumentError(
-              'TypePlus only supports generic functions with up to 5 parameters.');
       }
     }
 
