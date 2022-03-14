@@ -1,5 +1,4 @@
 import 'resolved_type.dart';
-import 'type_info.dart';
 import 'type_switcher.dart';
 import 'types_registry.dart';
 
@@ -14,7 +13,7 @@ extension TypePlus on Type {
   List<Type> get args => _resolved.argsAsTypes;
 
   /// The name of the type, without any type arguments
-  String get name => TypeInfo.name(this);
+  String get name => _resolved.name;
 
   /// The unique id of a type
   String get id => _resolved.id;

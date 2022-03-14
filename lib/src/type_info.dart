@@ -6,11 +6,6 @@ class TypeInfo {
   bool isNullable = false;
   TypeInfo? parent;
 
-  static String name<T>([Type? t]) {
-    var input = (t ?? T).toString();
-    return input.split('<')[0];
-  }
-
   static TypeInfo fromType<T>([Type? type]) {
     return fromString((type ?? T).toString());
   }

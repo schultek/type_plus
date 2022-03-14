@@ -1,3 +1,8 @@
+# 0.6.0
+
+- All standard types have named ids by default
+- Added tests
+
 # 0.5.1
 
 - Added Future and Stream to default types
