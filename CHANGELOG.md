@@ -1,3 +1,7 @@
+# 0.6.2
+
+- Made name resolution independent from type resolution
+
 # 0.6.1
 
 - Fixed id resolution

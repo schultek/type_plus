@@ -6,28 +6,25 @@ import 'unresolved_type.dart';
 import 'utils.dart';
 
 class TypeMatch {
-  final TypeInfo info;
   final List<Function> bases;
   final List<TypeMatch> args;
   final bool isNullable;
 
-  TypeMatch.fromInfo(this.info)
+  TypeMatch.fromInfo(TypeInfo info)
       : bases = TypeRegistry.instance.getFactoriesByName(info.type),
         args = info.args.map((i) => TypeMatch.fromInfo(i)).toList(),
         isNullable = info.isNullable;
 }
 
 class TypeOption {
-  final TypeInfo info;
   final Function base;
   final List<TypeOption> args;
   final bool isNullable;
 
-  TypeOption(this.info, this.base, this.args, {this.isNullable = false});
+  TypeOption(this.base, this.args, {this.isNullable = false});
 }
 
 class ResolvedType {
-  final TypeInfo info;
   final Type base;
   final Function factory;
   final List<ResolvedType> args;
@@ -38,7 +35,7 @@ class ResolvedType {
   late final Function _resolvedFactory;
   late final Type _reverseType;
 
-  ResolvedType(this.info, this.factory, this.args, {this.isNullable = false})
+  ResolvedType(this.factory, this.args, {this.isNullable = false})
       : base = factory(typeOf) {
     _resolvedFactory = TypeSwitcher.apply(factory,
         [isNullable ? <T>() => (f) => f<T?>() : <T>() => (f) => f<T>()], args);
@@ -48,13 +45,10 @@ class ResolvedType {
 
   factory ResolvedType.unresolved(TypeInfo info) {
     return ResolvedType(
-      info,
       UnresolvedType.factory(info.args.length),
       info.args.map((i) => ResolvedType.unresolved(i)).toList(),
     );
   }
-
-  String get name => info.type;
 
   R provideTo<R>(R Function<U>() fn) {
     return _resolvedFactory(fn);
@@ -92,11 +86,11 @@ class ResolvedType {
     List<TypeOption> getOptions(TypeMatch match) => [
           for (var o in match.args.map(getOptions).toList().power())
             for (var b in match.bases)
-              TypeOption(match.info, b, o, isNullable: match.isNullable),
+              TypeOption(b, o, isNullable: match.isNullable),
         ];
 
     ResolvedType resolveOption(TypeOption o) =>
-        ResolvedType(o.info, o.base, o.args.map(resolveOption).toList(),
+        ResolvedType(o.base, o.args.map(resolveOption).toList(),
             isNullable: o.isNullable);
 
     var options = getOptions(match).map(resolveOption);

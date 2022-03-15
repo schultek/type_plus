@@ -96,7 +96,7 @@ class TypeRegistry {
       var factory = _idToFactory[info.type] ??
           typeProviders.fold(null, (f, p) => f ?? p.getFactoryById(info.type));
       return factory != null
-          ? ResolvedType(info, factory, info.args.map(resolve).toList(),
+          ? ResolvedType(factory, info.args.map(resolve).toList(),
               isNullable: info.isNullable)
           : ResolvedType.unresolved(info);
     }

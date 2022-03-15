@@ -1,9 +1,12 @@
+import 'package:type_plus/src/type_info.dart';
+
 import 'resolved_type.dart';
 import 'type_switcher.dart';
 import 'types_registry.dart';
 
 /// Used to deconstruct a generic type
 extension TypePlus on Type {
+  TypeInfo get _info => TypeInfo.fromType(this);
   ResolvedType get _resolved => ResolvedType.from(this);
 
   /// The base type of a generic type, with all type arguments set to dynamic
@@ -13,7 +16,7 @@ extension TypePlus on Type {
   List<Type> get args => _resolved.argsAsTypes;
 
   /// The name of the type, without any type arguments
-  String get name => _resolved.name;
+  String get name => _info.type;
 
   /// The unique id of a type
   String get id => _resolved.id;

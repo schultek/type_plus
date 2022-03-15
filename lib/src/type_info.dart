@@ -6,8 +6,14 @@ class TypeInfo {
   bool isNullable = false;
   TypeInfo? parent;
 
+  static final Map<Type, TypeInfo> _typeInfo = {};
+
   static TypeInfo fromType<T>([Type? type]) {
-    return fromString((type ?? T).toString());
+    var t = type ?? T;
+    if (_typeInfo[t] != null) {
+      return _typeInfo[t]!;
+    }
+    return _typeInfo[t] = fromString(t.toString());
   }
 
   static TypeInfo fromString(String typeString) {
@@ -26,7 +32,7 @@ class FunctionInfo extends TypeInfo {
   Map<String, TypeInfo> namedParams = {};
 
   static FunctionInfo from(Function fn) {
-    return TypeInfo.fromString(fn.runtimeType.toString()) as FunctionInfo;
+    return TypeInfo.fromType(fn.runtimeType) as FunctionInfo;
   }
 
   @override
