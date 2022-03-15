@@ -85,8 +85,8 @@ class TypeRegistry {
   }
 
   String? idOf(Type type) {
-    return typeProviders.fold(null, (id, p) => id ?? p.idOf(type)) ??
-        _hashToId[type.hashCode];
+    return _hashToId[type.hashCode] ??
+        typeProviders.fold(null, (id, p) => id ?? p.idOf(type));
   }
 
   Type fromId(String id) {

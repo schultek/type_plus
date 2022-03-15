@@ -1,3 +1,7 @@
+# 0.6.1
+
+- Fixed id resolution
+
 # 0.6.0
 
 - All standard types have named ids by default
