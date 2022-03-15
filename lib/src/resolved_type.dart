@@ -54,15 +54,13 @@ class ResolvedType {
     return _resolvedFactory(fn);
   }
 
-  Type reverse() {
-    return _reverseType;
-  }
+  Type get reversed => _reverseType;
 
-  List<Type> get argsAsTypes => args.map((p) => p.base).toList();
+  List<Type> get argsAsTypes => args.map((p) => p.reversed).toList();
 
   String get id {
     var nullSuffix = isNullable ? '?' : '';
-    if (args.isNotEmpty && args.any((t) => t.reverse() != dynamic)) {
+    if (args.isNotEmpty && args.any((t) => t.reversed != dynamic)) {
       return '${base.baseId}<${args.map((r) => r.id).join(',')}>$nullSuffix';
     } else {
       return '$baseId$nullSuffix';
@@ -94,7 +92,7 @@ class ResolvedType {
             isNullable: o.isNullable);
 
     var options = getOptions(match).map(resolveOption);
-    var resolved = options.where((o) => o.reverse() == type).firstOrNull;
+    var resolved = options.where((o) => o.reversed == type).firstOrNull;
     return resolved ?? ResolvedType.unresolved(info);
   }
 

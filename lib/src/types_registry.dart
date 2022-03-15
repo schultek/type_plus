@@ -101,7 +101,7 @@ class TypeRegistry {
           : ResolvedType.unresolved(info);
     }
 
-    return resolve(info).reverse();
+    return resolve(info).reversed;
   }
 
   Set<Function> getSuperFactories(String id) {

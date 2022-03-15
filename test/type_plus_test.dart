@@ -19,6 +19,8 @@ void main() {
       expect(typeOf<List<int>>().base, equals(List));
       // args
       expect(typeOf<Future<String>>().args, equals([String]));
+      expect(typeOf<List<Future<String>>>().args.first,
+          equals(typeOf<Future<String>>()));
       // baseId
       expect(typeOf<Stream<double>>().baseId, equals('Stream'));
       // nullable

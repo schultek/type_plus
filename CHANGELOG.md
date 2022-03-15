@@ -1,3 +1,7 @@
+# 0.6.3
+
+- Fixed type arg resolving
+
 # 0.6.2
 
 - Made name resolution independent from type resolution
