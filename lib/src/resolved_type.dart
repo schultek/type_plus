@@ -37,10 +37,16 @@ class ResolvedType {
 
   ResolvedType(this.factory, this.args, {this.isNullable = false})
       : base = factory(typeOf) {
-    _resolvedFactory = TypeSwitcher.apply(factory,
-        [isNullable ? <T>() => (f) => f<T?>() : <T>() => (f) => f<T>()], args);
+    try {
+      _resolvedFactory = TypeSwitcher.apply(
+          factory, [<T>() => (f) => isNullable ? f<T?>() : f<T>()], args);
+    } on TypeError catch (_) {
+      _resolvedFactory = UnresolvedType.factory(1);
+    }
     _reverseType = _resolvedFactory(typeOf);
-    _resolvedTypes[_reverseType] = this;
+    if (_reverseType != UnresolvedType) {
+      _resolvedTypes[_reverseType] = this;
+    }
   }
 
   factory ResolvedType.unresolved(TypeInfo info) {

@@ -7,6 +7,10 @@ class B implements A {}
 
 class C<T> {}
 
+class D<T extends E> {}
+
+class E {}
+
 void main() {
   group('basic types', () {
     test('basic types work', () {
@@ -61,6 +65,13 @@ void main() {
           equals(num));
       expect(typeOf<List<String>>().args.first.provideTo(<T>() => T.name),
           equals('String'));
+    });
+
+    test('types with bounded params work', () {
+      TypePlus.addFactory((f) => f<E>());
+      TypePlus.addFactory(<T extends E>(f) => f<D<T>>());
+
+      expect((D).args, equals([(E)]));
     });
   });
 }

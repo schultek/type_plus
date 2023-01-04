@@ -1,3 +1,7 @@
+# 0.7.0
+
+- Fixed bug with bounded types
+
 # 0.6.3
 
 - Fixed type arg resolving

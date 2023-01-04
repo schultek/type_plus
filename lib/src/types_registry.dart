@@ -3,6 +3,7 @@ import 'dart:async';
 import 'resolved_type.dart';
 import 'type_info.dart';
 import 'type_plus.dart';
+import 'unresolved_type.dart';
 import 'utils.dart';
 
 Function ff<T>() => (f) => f<T>();
@@ -71,6 +72,11 @@ class TypeRegistry {
     (_nameToId[type.name] ??= {}).add(typeId);
     _hashToId[type.hashCode] = typeId;
     _idToSuperFactory[typeId] = superTypes?.toSet() ?? {ffObj};
+
+    if (type.base == UnresolvedType) {
+      throw ArgumentError('Failed to add type $type. This may happen when you did register '
+          'a used bound on a type parameter. Register all needed bounds before this type.');
+    }
   }
 
   List<Function> getFactoriesByName(String name) {
