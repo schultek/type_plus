@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:test/test.dart';
 import 'package:type_plus/type_plus.dart';
 
@@ -72,6 +74,12 @@ void main() {
       TypePlus.addFactory(<T extends E>(f) => f<D<T>>());
 
       expect((D).args, equals([(E)]));
+    });
+
+    test('gets non-nullable type', () {
+      TypePlus.add<A>();
+
+      expect((typeOf<A?>()).nonNull, equals(A));
     });
   });
 }

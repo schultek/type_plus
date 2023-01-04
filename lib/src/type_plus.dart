@@ -29,6 +29,9 @@ extension TypePlus on Type {
   /// Indicates if this type is nullable
   bool get isNullable => _resolved.isNullable;
 
+  /// Returns the non-nullable version of this type
+  Type get nonNull => _resolved.nonNull.reversed;
+
   /// Calls the given function with this type provided as the single type argument
   R provideTo<R>(R Function<U>() fn) => _resolved.provideTo(fn);
 

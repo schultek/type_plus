@@ -77,6 +77,8 @@ class ResolvedType {
     return TypeRegistry.instance.idOf(base) ?? '';
   }
 
+  late ResolvedType nonNull = !isNullable ? this : ResolvedType(factory, args);
+
   static ResolvedType from<T>([Type? t]) {
     var type = t ?? T;
 

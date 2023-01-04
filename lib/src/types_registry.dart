@@ -74,7 +74,8 @@ class TypeRegistry {
     _idToSuperFactory[typeId] = superTypes?.toSet() ?? {ffObj};
 
     if (type.base == UnresolvedType) {
-      throw ArgumentError('Failed to add type $type. This may happen when you did register '
+      throw ArgumentError(
+          'Failed to add type $type. This may happen when you did register '
           'a used bound on a type parameter. Register all needed bounds before this type.');
     }
   }

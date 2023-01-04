@@ -1,3 +1,7 @@
+# 0.8.0
+
+- Added `nonNull` type getter
+
 # 0.7.0
 
 - Fixed bug with bounded types
