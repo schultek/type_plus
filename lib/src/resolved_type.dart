@@ -42,6 +42,8 @@ class ResolvedType {
           factory, [<T>() => (f) => isNullable ? f<T?>() : f<T>()], args);
     } on TypeError catch (_) {
       _resolvedFactory = UnresolvedType.factory(1);
+    } on ArgumentError catch (_) {
+      _resolvedFactory = UnresolvedType.factory(1);
     }
     _reverseType = _resolvedFactory(typeOf);
     if (_reverseType != UnresolvedType) {
