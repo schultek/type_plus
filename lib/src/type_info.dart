@@ -60,20 +60,63 @@ class FunctionInfo extends TypeInfo {
   }
 }
 
+
+class RecordInfo extends TypeInfo {
+
+  late final String type = '()';
+
+  List<TypeInfo> get args {
+    return [...params, ...namedParams.values];
+  }
+
+  List<TypeInfo> params = [];
+  List<TypeInfo> optionalParams = [];
+  Map<String, TypeInfo> namedParams = {};
+
+  static RecordInfo from(Record r) {
+    return TypeInfo.fromType(r.runtimeType) as RecordInfo;
+  }
+
+  @override
+  String toString() {
+    var str = "";
+    str += '(${params.join(', ')}';
+    if (params.isNotEmpty &&
+        (optionalParams.isNotEmpty || namedParams.isNotEmpty)) {
+      str += ', ';
+    }
+    if (optionalParams.isNotEmpty) {
+      str += '[${optionalParams.join(', ')}]';
+    } else if (namedParams.isNotEmpty) {
+      str +=
+      '{${namedParams.entries.map((e) => '${e.value} ${e.key}').join(', ')}}';
+    }
+    str += ')';
+    if (isNullable) {
+      str = '$str?';
+    }
+    return str;
+  }
+}
+
 typedef EndCheck = bool Function();
 
 class TypeInfoBuilder {
   String name = '';
   List<TypeInfo> args = [];
   bool isNullable = false;
+  bool isFunctionOrRecord = false;
   bool isFunction = false;
   TypeInfo? returns;
   List<TypeInfo> params = [];
   List<TypeInfo> optionalParams = [];
   Map<String, TypeInfo> namedParams = {};
 
+  bool get isRecord => isFunctionOrRecord && !isFunction;
+
   TypeInfo build() {
     if (isFunction) {
+      assert(name.isEmpty);
       return FunctionInfo()
         ..returns = returns!
         ..params = params
@@ -81,9 +124,18 @@ class TypeInfoBuilder {
         ..namedParams = namedParams
         ..args = args
         ..isNullable = isNullable;
-    } else if (params.length == 1) {
-      return params.first..isNullable = isNullable;
+    } else if (isRecord) {
+      assert(name.isEmpty);
+      assert(args.isEmpty);
+      return RecordInfo()
+        ..params = params
+        ..optionalParams = optionalParams
+        ..namedParams = namedParams
+        ..isNullable = isNullable;
     } else {
+      assert(params.isEmpty);
+      assert(optionalParams.isEmpty);
+      assert(namedParams.isEmpty);
       return TypeInfo()
         ..type = name
         ..isNullable = isNullable
@@ -105,6 +157,7 @@ class TypeInfoBuilder {
         var bb = _visitArgs(r..read());
         b.args = bb.args;
       } else if (r.peek() == '(') {
+        b.isFunctionOrRecord = true;
         var bb = _visitParams(r..read());
         b.params = bb.params;
         b.optionalParams = bb.optionalParams;

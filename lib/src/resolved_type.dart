@@ -14,14 +14,14 @@ class TypeMatch {
       : bases = TypeRegistry.instance.getFactoriesByName(info.type),
         args = info.args.map((i) => TypeMatch.fromInfo(i)).toList(),
         isNullable = info.isNullable;
-}
 
-class TypeOption {
-  final Function base;
-  final List<TypeOption> args;
-  final bool isNullable;
-
-  TypeOption(this.base, this.args, {this.isNullable = false});
+  Iterable<ResolvedType> resolve() sync* {
+    for (var o in args.map((m) => m.resolve().toList()).toList().power()) {
+      for (var b in bases) {
+        yield ResolvedType(b, o.toList(), isNullable: isNullable);
+      }
+    }
+  }
 }
 
 class ResolvedType {
@@ -91,18 +91,7 @@ class ResolvedType {
     var info = TypeInfo.fromType(type);
     var match = TypeMatch.fromInfo(info);
 
-    List<TypeOption> getOptions(TypeMatch match) => [
-          for (var o in match.args.map(getOptions).toList().power())
-            for (var b in match.bases)
-              TypeOption(b, o, isNullable: match.isNullable),
-        ];
-
-    ResolvedType resolveOption(TypeOption o) =>
-        ResolvedType(o.base, o.args.map(resolveOption).toList(),
-            isNullable: o.isNullable);
-
-    var options = getOptions(match).map(resolveOption);
-    var resolved = options.where((o) => o.reversed == type).firstOrNull;
+    var resolved = match.resolve().where((o) => o.reversed == type).firstOrNull;
     return resolved ?? ResolvedType.unresolved(info);
   }
 
