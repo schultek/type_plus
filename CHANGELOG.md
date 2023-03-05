@@ -1,3 +1,8 @@
+# 1.1.0
+
+- Increase min sdk version to `2.15.0`
+- Performance improvements
+
 # 1.0.0
 
 - Stable release

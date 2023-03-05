@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'type_info.dart';
 import 'type_plus.dart';
 import 'type_switcher.dart';
@@ -30,16 +32,16 @@ class ResolvedType {
   final List<ResolvedType> args;
   final bool isNullable;
 
-  static final Map<Type, ResolvedType> _resolvedTypes = {};
+  static final Map<Type, ResolvedType> _resolvedTypes = HashMap();
 
   late final Function _resolvedFactory;
   late final Type _reverseType;
 
-  ResolvedType(this.factory, this.args, {this.isNullable = false})
-      : base = factory(typeOf) {
+  static dynamic _type<T>(dynamic Function<T>() f) => f<T>();
+
+  ResolvedType(this.factory, this.args, {this.isNullable = false}) : base = factory(typeOf) {
     try {
-      _resolvedFactory = TypeSwitcher.apply(
-          factory, [<T>() => (f) => isNullable ? f<T?>() : f<T>()], args);
+      _resolvedFactory = TypeSwitcher.apply(factory, [<T>() => isNullable ? _type<T?> : _type<T>], args);
     } on TypeError catch (_) {
       _resolvedFactory = UnresolvedType.factory(1);
     } on ArgumentError catch (_) {
@@ -93,13 +95,11 @@ class ResolvedType {
 
     List<TypeOption> getOptions(TypeMatch match) => [
           for (var o in match.args.map(getOptions).toList().power())
-            for (var b in match.bases)
-              TypeOption(b, o, isNullable: match.isNullable),
+            for (var b in match.bases) TypeOption(b, o, isNullable: match.isNullable),
         ];
 
     ResolvedType resolveOption(TypeOption o) =>
-        ResolvedType(o.base, o.args.map(resolveOption).toList(),
-            isNullable: o.isNullable);
+        ResolvedType(o.base, o.args.map(resolveOption).toList(), isNullable: o.isNullable);
 
     var options = getOptions(match).map(resolveOption);
     var resolved = options.where((o) => o.reversed == type).firstOrNull;
