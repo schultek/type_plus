@@ -2,8 +2,7 @@ import 'resolved_type.dart';
 import 'type_info.dart';
 
 class TypeSwitcher {
-  static dynamic apply(
-      Function fn, List<dynamic> params, List<ResolvedType> args) {
+  static dynamic apply(Function fn, List<dynamic> params, List<ResolvedType> args) {
     assert(() {
       var fi = FunctionInfo.from(fn);
 
@@ -11,21 +10,18 @@ class TypeSwitcher {
         throw ArgumentError(
             'Function expects different amount of type arguments. Provided ${args.length}, but expected ${fi.args.length}.');
       } else if (args.length > 5) {
-        throw ArgumentError(
-            'TypePlus only supports generic functions with up to 5 type arguments.');
+        throw ArgumentError('TypePlus only supports generic functions with up to 5 type arguments.');
       }
 
       if (fi.namedParams.isNotEmpty) {
         throw ArgumentError("Function $fn cannot have named parameters.");
       } else if (params.length < fi.params.length) {
-        throw ArgumentError(
-            "Function $fn must be called with at least ${fi.params.length} parameters.");
+        throw ArgumentError("Function $fn must be called with at least ${fi.params.length} parameters.");
       } else if (params.length > fi.params.length + fi.optionalParams.length) {
         throw ArgumentError(
             "Function $fn must be called with at most ${fi.params.length + fi.optionalParams.length} parameters.");
       } else if (params.length > 5) {
-        throw ArgumentError(
-            'TypePlus only supports generic functions with up to 5 parameters.');
+        throw ArgumentError('TypePlus only supports generic functions with up to 5 parameters.');
       }
 
       return true;
@@ -53,23 +49,15 @@ class TypeSwitcher {
         }
       }
 
-      switch (args.length) {
-        case 0:
-          return $0?.call();
-        case 1:
-          return call(<A>() => $1?.call<A>());
-        case 2:
-          return call(<A>() => call(<B>() => $2?.call<A, B>()));
-        case 3:
-          return call(
-              <A>() => call(<B>() => call(<C>() => $3?.call<A, B, C>())));
-        case 4:
-          return call(<A>() => call(
-              <B>() => call(<C>() => call(<D>() => $4?.call<A, B, C, D>()))));
-        case 5:
-          return call(<A>() => call(<B>() => call(<C>() =>
-              call(<D>() => call(<E>() => $5?.call<A, B, C, D, E>())))));
-      }
+      return switch (args.length) {
+        0 => $0?.call(),
+        1 => call(<A>() => $1?.call<A>()),
+        2 => call(<A>() => call(<B>() => $2?.call<A, B>())),
+        3 => call(<A>() => call(<B>() => call(<C>() => $3?.call<A, B, C>()))),
+        4 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => $4?.call<A, B, C, D>())))),
+        5 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => $5?.call<A, B, C, D, E>()))))),
+        _ => throw ArgumentError('TypePlus only supports generic functions with up to 5 type arguments.'),
+      };
     }
 
     dynamic $params({
@@ -80,21 +68,15 @@ class TypeSwitcher {
       Function(dynamic, dynamic, dynamic, dynamic)? $4,
       Function(dynamic, dynamic, dynamic, dynamic, dynamic)? $5,
     }) {
-      switch (params.length) {
-        case 0:
-          return $0?.call();
-        case 1:
-          return $1?.call(params[0]);
-        case 2:
-          return $2?.call(params[0], params[1]);
-        case 3:
-          return $3?.call(params[0], params[1], params[2]);
-        case 4:
-          return $4?.call(params[0], params[1], params[2], params[3]);
-        case 5:
-          return $5?.call(
-              params[0], params[1], params[2], params[3], params[4]);
-      }
+      return switch (params) {
+        [] => $0?.call(),
+        [var a] => $1?.call(a),
+        [var a, var b] => $2?.call(a, b),
+        [var a, var b, var c] => $3?.call(a, b, c),
+        [var a, var b, var c, var d] => $4?.call(a, b, c, d),
+        [var a, var b, var c, var d, var e] => $5?.call(a, b, c, d, e),
+        _ => throw ArgumentError('TypePlus only supports generic functions with up to 5 parameters.'),
+      };
     }
 
     return $args(

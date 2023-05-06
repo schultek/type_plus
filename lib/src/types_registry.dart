@@ -7,32 +7,31 @@ import 'unresolved_type.dart';
 import 'utils.dart';
 
 Function ff<T>() => (f) => f<T>();
-MapEntry<String, Iterable<Function>?> fd(String id, [Iterable<Function>? st]) =>
-    MapEntry(id, st);
+MapEntry<String, Iterable<Function>?> fd(String id, [Iterable<Function>? st]) => MapEntry(id, st);
 final ffObj = ff<Object>();
 
-final _sdkTypes = <Function, MapEntry<String, Iterable<Function>?>>{
-  (f) => f<dynamic>(): fd('dynamic'),
-  (f) => f<void>(): fd('void'),
-  (f) => f<Null>(): fd('Null'),
-  (f) => f<Object>(): fd('Object'),
-  (f) => f<bool>(): fd('bool', {ffObj}),
-  <T>(f) => f<Comparable<T>>(): fd('Comparable', {ffObj}),
-  (f) => f<num>(): fd('num', {ff<Comparable<num>>()}),
-  (f) => f<int>(): fd('int', {ff<num>()}),
-  (f) => f<double>(): fd('double', {ff<num>()}),
-  (f) => f<Pattern>(): fd('Pattern', {ffObj}),
-  (f) => f<String>(): fd('String', {ff<Comparable<String>>(), ff<Pattern>()}),
-  <T>(f) => f<Iterable<T>>(): fd('Iterable', {ffObj}),
-  <T>(f) => f<List<T>>(): fd('List', {<T>(f) => f<Iterable<T>>()}),
-  <T>(f) => f<Set<T>>(): fd('Set', {<T>(f) => f<Iterable<T>>()}),
-  <K, V>(f) => f<Map<K, V>>(): fd('Map', {ffObj}),
-  (f) => f<DateTime>(): fd('DateTime', {ff<Comparable<DateTime>>()}),
-  (f) => f<Type>(): fd('Type', {ffObj}),
-  (f) => f<Runes>(): fd('Runes', {ff<Iterable<int>>()}),
-  (f) => f<Symbol>(): fd('Symbol', {ffObj}),
-  <T>(f) => f<Future<T>>(): fd('Future', {ffObj}),
-  <T>(f) => f<Stream<T>>(): fd('Stream', {ffObj}),
+final _sdkTypes = <(Function, String, Iterable<Function>?)>{
+  ((f) => f<dynamic>(), 'dynamic', null),
+  ((f) => f<void>(), 'void', null),
+  ((f) => f<Null>(), 'Null', null),
+  ((f) => f<Object>(), 'Object', null),
+  ((f) => f<bool>(), 'bool', {ffObj}),
+  (<T>(f) => f<Comparable<T>>(), 'Comparable', {ffObj}),
+  ((f) => f<num>(), 'num', {ff<Comparable<num>>()}),
+  ((f) => f<int>(), 'int', {ff<num>()}),
+  ((f) => f<double>(), 'double', {ff<num>()}),
+  ((f) => f<Pattern>(), 'Pattern', {ffObj}),
+  ((f) => f<String>(), 'String', {ff<Comparable<String>>(), ff<Pattern>()}),
+  (<T>(f) => f<Iterable<T>>(), 'Iterable', {ffObj}),
+  (<T>(f) => f<List<T>>(), 'List', {<T>(f) => f<Iterable<T>>()}),
+  (<T>(f) => f<Set<T>>(), 'Set', {<T>(f) => f<Iterable<T>>()}),
+  (<K, V>(f) => f<Map<K, V>>(), 'Map', {ffObj}),
+  ((f) => f<DateTime>(), 'DateTime', {ff<Comparable<DateTime>>()}),
+  ((f) => f<Type>(), 'Type', {ffObj}),
+  ((f) => f<Runes>(), 'Runes', {ff<Iterable<int>>()}),
+  ((f) => f<Symbol>(), 'Symbol', {ffObj}),
+  (<T>(f) => f<Future<T>>(), 'Future', {ffObj}),
+  (<T>(f) => f<Stream<T>>(), 'Stream', {ffObj}),
 };
 
 class TypeRegistry {
@@ -47,8 +46,9 @@ class TypeRegistry {
   static TypeRegistry get instance {
     if (_instance == null) {
       _instance = TypeRegistry._();
-      _sdkTypes.forEach(
-          (fn, st) => _instance!.add(fn, id: st.key, superTypes: st.value));
+      for (var (fn, id, sup) in _sdkTypes) {
+        _instance!.add(fn, id: id, superTypes: sup);
+      }
     }
     return _instance!;
   }
@@ -62,8 +62,7 @@ class TypeRegistry {
     if (_idToFactory.containsKey(typeId)) {
       Type existingType = _idToFactory[typeId]!(typeOf);
       if (existingType != type) {
-        throw UnsupportedError(
-            'Types must have a unique id. You tried to add type $type with id "$typeId", '
+        throw UnsupportedError('Types must have a unique id. You tried to add type $type with id "$typeId", '
             'but this was already used for type $existingType.');
       }
     }
@@ -74,8 +73,7 @@ class TypeRegistry {
     _idToSuperFactory[typeId] = superTypes?.toSet() ?? {ffObj};
 
     if (type.base == UnresolvedType) {
-      throw ArgumentError(
-          'Failed to add type $type. This may happen when you did register '
+      throw ArgumentError('Failed to add type $type. This may happen when you did register '
           'a used bound on a type parameter. Register all needed bounds before this type.');
     }
   }
@@ -92,19 +90,16 @@ class TypeRegistry {
   }
 
   String? idOf(Type type) {
-    return _hashToId[type.hashCode] ??
-        typeProviders.fold(null, (id, p) => id ?? p.idOf(type));
+    return _hashToId[type.hashCode] ?? typeProviders.fold(null, (id, p) => id ?? p.idOf(type));
   }
 
   Type fromId(String id) {
     var info = TypeInfo.fromString(id);
 
     ResolvedType resolve(TypeInfo info) {
-      var factory = _idToFactory[info.type] ??
-          typeProviders.fold(null, (f, p) => f ?? p.getFactoryById(info.type));
+      var factory = _idToFactory[info.type] ?? typeProviders.fold(null, (f, p) => f ?? p.getFactoryById(info.type));
       return factory != null
-          ? ResolvedType(factory, info.args.map(resolve).toList(),
-              isNullable: info.isNullable)
+          ? ResolvedType(factory, info.args.map(resolve).toList(), isNullable: info.isNullable)
           : ResolvedType.unresolved(info);
     }
 

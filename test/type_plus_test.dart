@@ -25,8 +25,7 @@ void main() {
       expect(typeOf<List<int>>().base, equals(List));
       // args
       expect(typeOf<Future<String>>().args, equals([String]));
-      expect(typeOf<List<Future<String>>>().args.first,
-          equals(typeOf<Future<String>>()));
+      expect(typeOf<List<Future<String>>>().args.first, equals(typeOf<Future<String>>()));
       // baseId
       expect(typeOf<Stream<double>>().baseId, equals('Stream'));
       // nullable
@@ -63,10 +62,8 @@ void main() {
       expect(TypePlus.fromId('Future<int>'), equals(typeOf<Future<int>>()));
 
       expect((int).provideTo(<T>() => T.id), equals('int'));
-      expect(typeOf<Iterable<num>>().provideTo(<T>() => T.args.first),
-          equals(num));
-      expect(typeOf<List<String>>().args.first.provideTo(<T>() => T.name),
-          equals('String'));
+      expect(typeOf<Iterable<num>>().provideTo(<T>() => T.args.first), equals(num));
+      expect(typeOf<List<String>>().args.first.provideTo(<T>() => T.name), equals('String'));
     });
 
     test('types with bounded params work', () {
@@ -80,6 +77,13 @@ void main() {
       TypePlus.add<A>();
 
       expect((typeOf<A?>()).nonNull, equals(A));
+    });
+
+    test('records work', () {
+      TypePlus.addFactory(<A, B>(f) => f<(A a, {B b})>());
+
+      expect((typeOf<(int a, {String? b})>()).args.first, equals(int));
+      expect((typeOf<List<(int a, {String? b})>>()).args.first.args[1], equals(typeOf<String?>()));
     });
   });
 }
