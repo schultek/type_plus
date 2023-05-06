@@ -53,11 +53,12 @@ void main() {
 
   // construct a new type by it's id
   Type newType = TypePlus.fromId('$boxId<$personId>');
-  print(newType); // prints: "Box<Person>"
+  assert(newType == Box<Person>);
 
   // check if a type implements another type
-  print(newType.implements(Box)); // prints: "true"
-  print((Group).implements(Iterable<Person>)); // prints: "true"
+  assert(newType.implements(Box));
+  assert((Group).implements(Iterable<Person>));
+
   // or the other way around
-  print((num).implementedBy(int)); // prints: "true"
+  assert((num).implementedBy(int));
 }

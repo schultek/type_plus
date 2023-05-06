@@ -4,12 +4,12 @@ import 'resolved_type.dart';
 import 'type_switcher.dart';
 import 'types_registry.dart';
 
-/// Used to deconstruct a generic type
+/// Used to deconstruct a generic type.
 extension TypePlus on Type {
   TypeInfo get _info => TypeInfo.fromType(this);
   ResolvedType get _resolved => ResolvedType.from(this);
 
-  /// The base type of a generic type, with all type arguments set to dynamic
+  /// The base type of a generic type, with all type arguments set to dynamic.
   Type get base => _resolved.base;
 
   /// The type arguments of a generic type
@@ -43,27 +43,22 @@ extension TypePlus on Type {
   bool implementedBy<T>([Type? t]) => (t ?? T).implements(this);
 
   /// Adds a non-generic type, used as a simpler syntax to [addFactory]
-  static void add<T>({String? id, Iterable<Type>? superTypes}) =>
-      TypeRegistry.instance.add((f) => f<T>(),
-          id: id,
-          superTypes: superTypes?.map(
-              (t) => (Function<T>() f) => f.callWith(typeArguments: [t])));
+  static void add<T>({String? id, Iterable<Type>? superTypes}) => TypeRegistry.instance.add((f) => f<T>(),
+      id: id, superTypes: superTypes?.map((t) => (Function<T>() f) => f.callWith(typeArguments: [t])));
 
   /// Adds a type factory for any generic or non-generic type
   /// @param id: An optional unique id for this type, that will override the default id
-  static void addFactory(Function factory,
-          {String? id, Iterable<Function>? superTypes}) =>
+  static void addFactory(Function factory, {String? id, Iterable<Function>? superTypes}) =>
       TypeRegistry.instance.add(factory, id: id, superTypes: superTypes);
 
   /// Registers a type provider to be used
-  static void register(TypeProvider provider) =>
-      TypeRegistry.instance.register(provider);
+  static void register(TypeProvider provider) => TypeRegistry.instance.register(provider);
 
   /// Constructs a type from a type id
   static Type fromId(String id) => TypeRegistry.instance.fromId(id);
 }
 
-/// A TypeProvider is used to handle types without needing to manually add their factory functions
+/// A TypeProvider is used to handle types without needing to manually add their factory functions.
 abstract class TypeProvider {
   /// Get a type factory from a type id
   Function? getFactoryById(String id);
@@ -75,13 +70,12 @@ abstract class TypeProvider {
   String? idOf(Type type);
 }
 
-// Extension to call any function with generic type arguments
+/// Extension to call any function with generic type arguments.
 extension FunctionPlus on Function {
   dynamic callWith({
     List<dynamic>? parameters,
     List<Type>? typeArguments,
   }) {
-    return TypeSwitcher.apply(this, parameters ?? [],
-        typeArguments?.map((t) => ResolvedType.from(t)).toList() ?? []);
+    return TypeSwitcher.apply(this, parameters ?? [], typeArguments?.map((t) => ResolvedType.from(t)).toList() ?? []);
   }
 }

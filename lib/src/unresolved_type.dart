@@ -1,5 +1,6 @@
 /// Represents a type that cannot be resolved.
-/// Most likely when the type wasn't previously added with [TypePlus.add()]
+///
+/// Most likely when the type wasn't previously added with [TypePlus.add()].
 class UnresolvedType {
   static Function factory(int length) {
     return switch (length) {
