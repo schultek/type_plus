@@ -3,6 +3,7 @@ import 'dart:math';
 class TypeInfo {
   String type = '';
   List<TypeInfo> args = [];
+  TypeInfo? bound;
   bool isNullable = false;
   TypeInfo? parent;
 
@@ -22,7 +23,7 @@ class TypeInfo {
 
   @override
   String toString() =>
-      '$type${args.isNotEmpty ? '<${args.join(', ')}>' : ''}${isNullable ? '?' : ''}';
+      '$type${args.isNotEmpty ? '<${args.join(', ')}>' : ''}${isNullable ? '?' : ''}${bound != null ? ' extends $bound' : ''}';
 }
 
 class FunctionInfo extends TypeInfo {
@@ -42,15 +43,13 @@ class FunctionInfo extends TypeInfo {
       str += '<${args.join(', ')}>';
     }
     str += '(${params.join(', ')}';
-    if (params.isNotEmpty &&
-        (optionalParams.isNotEmpty || namedParams.isNotEmpty)) {
+    if (params.isNotEmpty && (optionalParams.isNotEmpty || namedParams.isNotEmpty)) {
       str += ', ';
     }
     if (optionalParams.isNotEmpty) {
       str += '[${optionalParams.join(', ')}]';
     } else if (namedParams.isNotEmpty) {
-      str +=
-          '{${namedParams.entries.map((e) => '${e.value} ${e.key}').join(', ')}}';
+      str += '{${namedParams.entries.map((e) => '${e.value} ${e.key}').join(', ')}}';
     }
     str += ') => $returns';
     if (isNullable) {
@@ -60,9 +59,7 @@ class FunctionInfo extends TypeInfo {
   }
 }
 
-
 class RecordInfo extends TypeInfo {
-
   late final String type = '()';
 
   List<TypeInfo> get args {
@@ -81,15 +78,13 @@ class RecordInfo extends TypeInfo {
   String toString() {
     var str = "";
     str += '(${params.join(', ')}';
-    if (params.isNotEmpty &&
-        (optionalParams.isNotEmpty || namedParams.isNotEmpty)) {
+    if (params.isNotEmpty && (optionalParams.isNotEmpty || namedParams.isNotEmpty)) {
       str += ', ';
     }
     if (optionalParams.isNotEmpty) {
       str += '[${optionalParams.join(', ')}]';
     } else if (namedParams.isNotEmpty) {
-      str +=
-      '{${namedParams.entries.map((e) => '${e.value} ${e.key}').join(', ')}}';
+      str += '{${namedParams.entries.map((e) => '${e.value} ${e.key}').join(', ')}}';
     }
     str += ')';
     if (isNullable) {
@@ -104,15 +99,14 @@ typedef EndCheck = bool Function();
 class TypeInfoBuilder {
   String name = '';
   List<TypeInfo> args = [];
+  TypeInfo? bound;
   bool isNullable = false;
-  bool isFunctionOrRecord = false;
+  bool isRecord = false;
   bool isFunction = false;
   TypeInfo? returns;
   List<TypeInfo> params = [];
   List<TypeInfo> optionalParams = [];
   Map<String, TypeInfo> namedParams = {};
-
-  bool get isRecord => isFunctionOrRecord && !isFunction;
 
   TypeInfo build() {
     if (isFunction) {
@@ -127,9 +121,9 @@ class TypeInfoBuilder {
     } else if (isRecord) {
       assert(name.isEmpty);
       assert(args.isEmpty);
+      assert(optionalParams.isEmpty);
       return RecordInfo()
         ..params = params
-        ..optionalParams = optionalParams
         ..namedParams = namedParams
         ..isNullable = isNullable;
     } else {
@@ -139,7 +133,8 @@ class TypeInfoBuilder {
       return TypeInfo()
         ..type = name
         ..isNullable = isNullable
-        ..args = args;
+        ..args = args
+        ..bound = bound;
     }
   }
 
@@ -157,24 +152,27 @@ class TypeInfoBuilder {
         var bb = _visitArgs(r..read());
         b.args = bb.args;
       } else if (r.peek() == '(') {
-        b.isFunctionOrRecord = true;
         var bb = _visitParams(r..read());
         b.params = bb.params;
         b.optionalParams = bb.optionalParams;
         b.namedParams = bb.namedParams;
-      } else if (r.peek(4) == ' => ') {
-        b.isFunction = true;
-        r.read(4);
-      } else if (r.peek() == '?') {
-        b.isNullable = true;
-        r.read();
-      } else {
-        if (b.isFunction) {
+        if (r.peek(4) == ' => ') {
+          b.isFunction = true;
+          r.read(4);
           var bb = _visitType(r, endWhen: endWhen);
           b.returns = bb.build();
         } else {
-          b.name += r.read();
+          b.isRecord = true;
         }
+      } else if (r.peek() == '?') {
+        b.isNullable = true;
+        r.read();
+      } else if (r.peek(9) == ' extends ') {
+        r.read(9);
+        var bb = _visitType(r, endWhen: endWhen);
+        b.bound = bb.build();
+      } else {
+        b.name += r.read();
       }
     }
 
@@ -191,8 +189,7 @@ class TypeInfoBuilder {
         r.read(2);
         continue;
       } else {
-        var bb =
-            _visitType(r, endWhen: () => r.peek() == '>' || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == '>' || r.peek(2) == ', ');
         b.args.add(bb.build());
       }
     }
@@ -215,8 +212,7 @@ class TypeInfoBuilder {
         r.read();
         break;
       } else {
-        var bb =
-            _visitType(r, endWhen: () => r.peek() == end || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == end || r.peek(2) == ', ');
         b.params.add(bb.build());
       }
     }
@@ -233,8 +229,7 @@ class TypeInfoBuilder {
         r.read();
         break;
       } else {
-        var bb =
-            _visitType(r, endWhen: () => r.peek() == '}' || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == '}' || r.peek(2) == ', ');
         if (bb.isFunction) {
           var name = bb.returns!.type.split(' ');
           bb.returns!.type = name[0];
