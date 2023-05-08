@@ -1,6 +1,6 @@
 # 2.0.0
 
-- Stable release for Dart 3
+- Increase min sdk version to `3.0.0`
 - Added support for records
 
 # 1.1.0

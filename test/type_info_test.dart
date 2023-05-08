@@ -69,8 +69,6 @@ void main() {
       expect(typeOf<(int,)>().info, isRecordType([isInt]));
       expect(typeOf<(int, String, bool)>().info, isRecordType([isInt, isString, isBool]));
       expect(typeOf<(A, {B b})>().info, isRecordType([isType('A')], named: {'b': isType('B')}));
-      print(typeOf<(void Function(), {C<bool> Function<T extends ({String x})>({(int,) p}) fn})>());
-      print(typeOf<(void Function(), {C<bool> Function<T extends ({String x})>({(int,) p}) fn})>().info);
       expect(
         typeOf<(void Function(), {C<bool> Function<T extends ({String x})>({(int,) p}) fn})>().info,
         isRecordType([
