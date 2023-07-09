@@ -1,3 +1,7 @@
+# 2.0.1
+
+- Fixed bug when registering types with conflicting hashCodes.
+
 # 2.0.0
 
 - Increase min sdk version to `3.0.0`

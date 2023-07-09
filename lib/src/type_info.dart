@@ -60,7 +60,15 @@ class FunctionInfo extends TypeInfo {
 }
 
 class RecordInfo extends TypeInfo {
-  late final String type = '()';
+  String get type {
+    return '('
+        '${params.indexed.map((r) => '\$${r.$1}').join(', ')}'
+        '${params.isNotEmpty && namedParams.isNotEmpty ? ', ' : ''}'
+        '${namedParams.isNotEmpty ? '{'
+        '${namedParams.entries.map((e) => '${e.key}').join(', ')}'
+        '}' : ''}'
+        ')';
+  }
 
   List<TypeInfo> get args {
     return [...params, ...namedParams.values];

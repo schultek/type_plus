@@ -35,9 +35,9 @@ final _sdkTypes = <(Function, String, Iterable<Function>?)>{
 };
 
 class TypeRegistry {
+  final Map<Type, String> _typeToId = {};
   final Map<String, Set<String>> _nameToId = {};
   final Map<String, Function> _idToFactory = {};
-  final Map<int, String> _hashToId = {};
   final Map<String, Set<Function>> _idToSuperFactory = {};
 
   final Set<TypeProvider> typeProviders = {};
@@ -57,19 +57,29 @@ class TypeRegistry {
 
   void add(Function factory, {String? id, Iterable<Function>? superTypes}) {
     Type type = factory(typeOf);
-    var typeId = id ?? '${type.hashCode}';
 
-    if (_idToFactory.containsKey(typeId)) {
-      Type existingType = _idToFactory[typeId]!(typeOf);
-      if (existingType != type) {
-        throw UnsupportedError('Types must have a unique id. You tried to add type $type with id "$typeId", '
-            'but this was already used for type $existingType.');
+    if (id != null) {
+      if (_idToFactory.containsKey(id)) {
+        Type existingType = _idToFactory[id]!(typeOf);
+        if (existingType != type) {
+          throw UnsupportedError('Types must have a unique id. You tried to add type $type with id "$id", '
+              'but this was already used for type $existingType.');
+        }
       }
     }
 
-    _idToFactory[typeId] = factory;
+    var typeId = id ?? _typeToId[type];
+
+    if (typeId == null) {
+      typeId = '${type.hashCode}';
+      while (_idToFactory.containsKey(typeId)) {
+        typeId = '${typeId}_';
+      }
+    }
+
+    _idToFactory[typeId!] = factory;
     (_nameToId[type.name] ??= {}).add(typeId);
-    _hashToId[type.hashCode] = typeId;
+    _typeToId[type] = typeId;
     _idToSuperFactory[typeId] = superTypes?.toSet() ?? {ffObj};
 
     if (type.base == UnresolvedType) {
@@ -90,7 +100,7 @@ class TypeRegistry {
   }
 
   String? idOf(Type type) {
-    return _hashToId[type.hashCode] ?? typeProviders.fold(null, (id, p) => id ?? p.idOf(type));
+    return _typeToId[type] ?? typeProviders.fold(null, (id, p) => id ?? p.idOf(type));
   }
 
   Type fromId(String id) {
