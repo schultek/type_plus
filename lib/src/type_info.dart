@@ -147,7 +147,7 @@ class TypeInfoBuilder {
   }
 
   static from(String typeString) {
-    var reader = StringReader(typeString);
+    var reader = StringReader(typeString.normalizeWhiteSpacesInsideGenerics);
     return _visitType(reader);
   }
 
@@ -193,11 +193,11 @@ class TypeInfoBuilder {
       if (r.peek() == '>') {
         r.read();
         break;
-      } else if (r.peek(2) == ', ') {
-        r.read(2);
+      } else if (r.peek() == ',') {
+        r.read();
         continue;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == '>' || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == '>' || r.peek() == ',');
         b.args.add(bb.build());
       }
     }
@@ -207,8 +207,8 @@ class TypeInfoBuilder {
   static TypeInfoBuilder _visitParams(StringReader r, [String end = ')']) {
     var b = TypeInfoBuilder();
     while (r.hasNext()) {
-      if (r.peek(2) == ', ') {
-        r.read(2);
+      if (r.peek() == ',') {
+        r.read();
         continue;
       } else if (r.peek() == '[') {
         var bb = _visitParams(r..read(), ']');
@@ -220,7 +220,7 @@ class TypeInfoBuilder {
         r.read();
         break;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == end || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == end || r.peek() == ',');
         b.params.add(bb.build());
       }
     }
@@ -230,14 +230,14 @@ class TypeInfoBuilder {
   static TypeInfoBuilder _visitNamedParams(StringReader r) {
     var b = TypeInfoBuilder();
     while (r.hasNext()) {
-      if (r.peek(2) == ', ') {
-        r.read(2);
+      if (r.peek() == ',') {
+        r.read();
         continue;
       } else if (r.peek() == '}') {
         r.read();
         break;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == '}' || r.peek(2) == ', ');
+        var bb = _visitType(r, endWhen: () => r.peek() == '}' || r.peek() == ',');
         if (bb.isFunction) {
           var name = bb.returns!.type.split(' ');
           bb.returns!.type = name[0];
@@ -272,4 +272,9 @@ class StringReader {
   String peek([int n = 1]) {
     return _str.substring(_i, min(_str.length, _i + n));
   }
+}
+
+
+extension on String {
+  String get normalizeWhiteSpacesInsideGenerics => replaceAll(RegExp("((?<=[,<])\\s+)|(\\s+(?=[>,]))"), "");
 }
