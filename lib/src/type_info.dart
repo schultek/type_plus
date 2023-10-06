@@ -1,5 +1,3 @@
-import 'dart:math';
-
 class TypeInfo {
   String type = '';
   List<TypeInfo> args = [];
@@ -65,8 +63,8 @@ class RecordInfo extends TypeInfo {
         '${params.indexed.map((r) => '\$${r.$1}').join(', ')}'
         '${params.isNotEmpty && namedParams.isNotEmpty ? ', ' : ''}'
         '${namedParams.isNotEmpty ? '{'
-        '${namedParams.entries.map((e) => '${e.key}').join(', ')}'
-        '}' : ''}'
+            '${namedParams.entries.map((e) => '${e.key}').join(', ')}'
+            '}' : ''}'
         ')';
   }
 
@@ -102,7 +100,7 @@ class RecordInfo extends TypeInfo {
   }
 }
 
-typedef EndCheck = bool Function();
+typedef EndCheck = bool Function(String);
 
 class TypeInfoBuilder {
   String name = '';
@@ -147,129 +145,179 @@ class TypeInfoBuilder {
   }
 
   static from(String typeString) {
-    var reader = StringReader(typeString);
+    var reader = TokenIterator(typeString);
+    reader.moveNext();
     return _visitType(reader);
   }
 
-  static TypeInfoBuilder _visitType(StringReader r, {EndCheck? endWhen}) {
+  static TypeInfoBuilder _visitType(Iterator<String?> it, {EndCheck? endWhen}) {
     var b = TypeInfoBuilder();
-    while (r.hasNext()) {
-      if (endWhen?.call() ?? false) {
+    while (true) {
+      var token = it.current;
+      if (token == null) {
         break;
-      } else if (r.peek() == '<') {
-        var bb = _visitArgs(r..read());
+      } else if (endWhen?.call(token) ?? false) {
+        break;
+      } else if (token == '<') {
+        it.moveNext();
+        var bb = _visitArgs(it);
         b.args = bb.args;
-      } else if (r.peek() == '(') {
-        var bb = _visitParams(r..read());
+      } else if (token == '(') {
+        it.moveNext();
+        var bb = _visitParams(it);
         b.params = bb.params;
         b.optionalParams = bb.optionalParams;
         b.namedParams = bb.namedParams;
-        if (r.peek(4) == ' => ') {
-          b.isFunction = true;
-          r.read(4);
-          var bb = _visitType(r, endWhen: endWhen);
-          b.returns = bb.build();
-        } else {
-          b.isRecord = true;
-        }
-      } else if (r.peek() == '?') {
+
+        // Assume a record until we see a function.
+        b.isRecord = true;
+      } else if (token == '=>') {
+        it.moveNext();
+        b.isRecord = false;
+        b.isFunction = true;
+        var bb = _visitType(it, endWhen: endWhen);
+        b.returns = bb.build();
+      } else if (token == '?') {
+        it.moveNext();
         b.isNullable = true;
-        r.read();
-      } else if (r.peek(9) == ' extends ') {
-        r.read(9);
-        var bb = _visitType(r, endWhen: endWhen);
+      } else if (token == 'extends') {
+        it.moveNext();
+        var bb = _visitType(it, endWhen: endWhen);
         b.bound = bb.build();
       } else {
-        b.name += r.read();
+        if (b.name.isNotEmpty || b.isRecord || b.isFunction) {
+          // The name token belongs to a named param
+          break;
+        }
+        it.moveNext();
+        b.name = token;
       }
     }
 
     return b;
   }
 
-  static TypeInfoBuilder _visitArgs(StringReader r) {
+  static TypeInfoBuilder _visitArgs(Iterator<String?> it) {
     var b = TypeInfoBuilder();
-    while (r.hasNext()) {
-      if (r.peek() == '>') {
-        r.read();
+    while (true) {
+      var token = it.current;
+      if (token == null) {
         break;
-      } else if (r.peek(2) == ', ') {
-        r.read(2);
+      } else if (token == '>') {
+        it.moveNext();
+        break;
+      } else if (token == ',') {
+        it.moveNext();
         continue;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == '>' || r.peek(2) == ', ');
+        var bb = _visitType(it, endWhen: (t) => t == '>' || t == ',');
         b.args.add(bb.build());
       }
     }
     return b;
   }
 
-  static TypeInfoBuilder _visitParams(StringReader r, [String end = ')']) {
+  static TypeInfoBuilder _visitParams(Iterator<String?> it, [String end = ')']) {
     var b = TypeInfoBuilder();
-    while (r.hasNext()) {
-      if (r.peek(2) == ', ') {
-        r.read(2);
-        continue;
-      } else if (r.peek() == '[') {
-        var bb = _visitParams(r..read(), ']');
-        b.optionalParams = bb.params;
-      } else if (r.peek() == '{') {
-        var bb = _visitNamedParams(r..read());
-        b.namedParams = bb.namedParams;
-      } else if (r.peek() == end) {
-        r.read();
+    while (true) {
+      var token = it.current;
+      if (token == null) {
         break;
+      } else if (token == ',') {
+        it.moveNext();
+        continue;
+      } else if (token == end) {
+        it.moveNext();
+        break;
+      } else if (token == '[') {
+        it.moveNext();
+        var bb = _visitParams(it, ']');
+        b.optionalParams = bb.params;
+      } else if (token == '{') {
+        it.moveNext();
+        var bb = _visitNamedParams(it);
+        b.namedParams = bb.namedParams;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == end || r.peek(2) == ', ');
+        var bb = _visitType(it, endWhen: (t) => t == end || t == ',');
         b.params.add(bb.build());
       }
     }
     return b;
   }
 
-  static TypeInfoBuilder _visitNamedParams(StringReader r) {
+  static TypeInfoBuilder _visitNamedParams(Iterator<String?> it) {
     var b = TypeInfoBuilder();
-    while (r.hasNext()) {
-      if (r.peek(2) == ', ') {
-        r.read(2);
+    while (true) {
+      var token = it.current;
+      if (token == null) {
+        break;
+      } else if (token == ',') {
+        it.moveNext();
         continue;
-      } else if (r.peek() == '}') {
-        r.read();
+      } else if (token == '}') {
+        it.moveNext();
         break;
       } else {
-        var bb = _visitType(r, endWhen: () => r.peek() == '}' || r.peek(2) == ', ');
-        if (bb.isFunction) {
-          var name = bb.returns!.type.split(' ');
-          bb.returns!.type = name[0];
-          b.namedParams[name[1]] = bb.build();
-        } else {
-          var name = bb.name.split(' ');
-          bb.name = name[0];
-          b.namedParams[name[1]] = bb.build();
-        }
+        var bb = _visitType(it, endWhen: (t) => t == '}' || t == ',');
+        var name = it.current!;
+        it.moveNext();
+        b.namedParams[name] = bb.build();
       }
     }
     return b;
   }
 }
 
-class StringReader {
+class TokenIterator implements Iterator<String?> {
   String _str;
-  int _i;
+  (int, int)? _curr;
 
-  StringReader(this._str) : _i = 0;
-
-  bool hasNext() {
-    return _i < _str.length;
+  TokenIterator(this._str) : _curr = (0, 0) {
+    _str = _str.trim();
   }
 
-  String read([int n = 1]) {
-    var o = _str.substring(_i, _i + n);
-    _i += n;
-    return o;
+  final _whitespace = ' ';
+
+  bool moveNext() {
+    var i = _curr!.$2;
+    while (i < _str.length && _str.substring(i, i + 1) == _whitespace) {
+      i++;
+    }
+    var e = i;
+    if (i >= _str.length) {
+      _curr = null;
+      return false;
+    }
+
+    var isName = false;
+    while (e < _str.length) {
+      var nextChar = _str.substring(e, e + 1);
+      if (nextChar == _whitespace) {
+        break;
+      } else if ({'<', '>', '(', ')', '[', ']', '{', '}', ',', '?'}.contains(nextChar)) {
+        if (!isName) {
+          e++;
+        }
+        break;
+      } else if (e < _str.length - 1 && _str.substring(e, e + 2) == '=>') {
+        if (!isName) {
+          e += 2;
+        }
+        break;
+      } else {
+        isName = true;
+        e++;
+      }
+    }
+
+    _curr = (i, e);
+    return true;
   }
 
-  String peek([int n = 1]) {
-    return _str.substring(_i, min(_str.length, _i + n));
+  String? get current {
+    return switch (_curr) {
+      null => null,
+      (var i, var e) => _str.substring(i, e),
+    };
   }
 }

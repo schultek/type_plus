@@ -82,5 +82,22 @@ void main() {
         }),
       );
     });
+
+    test("parses with whitespace", () {
+      Type a = Map;
+      Type b = int;
+
+      Type withoutSpaceAfterComma = TypePlus.fromId('${a.id}<${b.id},${b.id}>');
+      Type oneSpaceAfterComma = TypePlus.fromId('${a.id}<${b.id}, ${b.id}>');
+      Type twoSpaceAfterComma = TypePlus.fromId('${a.id}<${b.id},  ${b.id}>');
+      Type spaceAroundComma = TypePlus.fromId('${a.id}<${b.id} , ${b.id}>');
+
+      expect(withoutSpaceAfterComma.base, a);
+      withoutSpaceAfterComma.args.forEach((element) => expect(element, b));
+
+      expect(oneSpaceAfterComma, withoutSpaceAfterComma);
+      expect(twoSpaceAfterComma, withoutSpaceAfterComma);
+      expect(spaceAroundComma, withoutSpaceAfterComma);
+    });
   });
 }

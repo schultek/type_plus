@@ -1,3 +1,7 @@
+# 2.1.0
+
+- Ignore whitespaces in type ids.
+
 # 2.0.1
 
 - Fixed bug when registering types with conflicting hashCodes.
