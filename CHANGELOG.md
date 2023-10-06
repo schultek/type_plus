@@ -1,6 +1,7 @@
 # 2.1.0
 
 - Ignore whitespaces in type ids.
+- Added support for up to 10 type arguments.
 
 # 2.0.1
 
