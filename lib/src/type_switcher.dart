@@ -38,6 +38,7 @@ class TypeSwitcher {
       Function<A, B, C, E, D, F, G>()? $7,
       Function<A, B, C, E, D, F, G, H>()? $8,
       Function<A, B, C, E, D, F, G, H, I>()? $9,
+      Function<A, B, C, E, D, F, G, H, I, J>()? $10,
     }) {
       var a = [...args];
       dynamic call(Function next) {
@@ -60,11 +61,17 @@ class TypeSwitcher {
         3 => call(<A>() => call(<B>() => call(<C>() => $3?.call<A, B, C>()))),
         4 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => $4?.call<A, B, C, D>())))),
         5 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => $5?.call<A, B, C, D, E>()))))),
-        6 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() => $6?.call<A, B, C, D, E, F>())))))),
-        7 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() => call(<G>() => $7?.call<A, B, C, D, E, F, G>()))))))),
-        8 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() => call(<G>() => call(<H>() => $8?.call<A, B, C, D, E, F, G, H>())))))))),
-        9 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() => call(<G>() => call(<H>() => call(<I>() => $9?.call<A, B, C, D, E, F, G, H, I>()))))))))),
-        _ => throw ArgumentError('TypePlus only supports generic functions with up to 5 type arguments.'),
+        6 => call(<A>() =>
+            call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() => $6?.call<A, B, C, D, E, F>())))))),
+        7 => call(<A>() => call(<B>() => call(
+            <C>() => call(<D>() => call(<E>() => call(<F>() => call(<G>() => $7?.call<A, B, C, D, E, F, G>()))))))),
+        8 => call(<A>() => call(<B>() => call(<C>() => call(
+            <D>() => call(<E>() => call(<F>() => call(<G>() => call(<H>() => $8?.call<A, B, C, D, E, F, G, H>())))))))),
+        9 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() =>
+            call(<F>() => call(<G>() => call(<H>() => call(<I>() => $9?.call<A, B, C, D, E, F, G, H, I>()))))))))),
+        10 => call(<A>() => call(<B>() => call(<C>() => call(<D>() => call(<E>() => call(<F>() =>
+            call(<G>() => call(<H>() => call(<I>() => call(<J>() => $10?.call<A, B, C, D, E, F, G, H, I, J>())))))))))),
+        _ => throw ArgumentError('TypePlus only supports generic functions with up to 10 type arguments.'),
       };
     }
 
@@ -79,6 +86,7 @@ class TypeSwitcher {
       Function(dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic)? $7,
       Function(dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic)? $8,
       Function(dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic)? $9,
+      Function(dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic)? $10,
     }) {
       return switch (params) {
         [] => $0?.call(),
@@ -91,6 +99,8 @@ class TypeSwitcher {
         [var a, var b, var c, var d, var e, var f, var g] => $7?.call(a, b, c, d, e, f, g),
         [var a, var b, var c, var d, var e, var f, var g, var h] => $8?.call(a, b, c, d, e, f, g, h),
         [var a, var b, var c, var d, var e, var f, var g, var h, var i] => $9?.call(a, b, c, d, e, f, g, h, i),
+        [var a, var b, var c, var d, var e, var f, var g, var h, var i, var j] =>
+          $10?.call(a, b, c, d, e, f, g, h, i, j),
         _ => throw ArgumentError('TypePlus only supports generic functions with up to 10 parameters.'),
       };
     }
@@ -107,6 +117,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn(a, b, c, d, e, f, g, h, i, j),
       ),
       $1: <A>() => $params(
         $0: () => fn<A>(),
@@ -119,6 +130,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A>(a, b, c, d, e, f, g, h, i, j),
       ),
       $2: <A, B>() => $params(
         $0: () => fn<A, B>(),
@@ -131,6 +143,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B>(a, b, c, d, e, f, g, h, i, j),
       ),
       $3: <A, B, C>() => $params(
         $0: () => fn<A, B, C>(),
@@ -143,6 +156,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C>(a, b, c, d, e, f, g, h, i, j),
       ),
       $4: <A, B, C, D>() => $params(
         $0: () => fn<A, B, C, D>(),
@@ -155,6 +169,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D>(a, b, c, d, e, f, g, h, i, j),
       ),
       $5: <A, B, C, D, E>() => $params(
         $0: () => fn<A, B, C, D, E>(),
@@ -167,6 +182,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E>(a, b, c, d, e, f, g, h, i, j),
       ),
       $6: <A, B, C, D, E, F>() => $params(
         $0: () => fn<A, B, C, D, E, F>(),
@@ -179,6 +195,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E, F>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E, F>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E, F>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E, F>(a, b, c, d, e, f, g, h, i, j),
       ),
       $7: <A, B, C, D, E, F, G>() => $params(
         $0: () => fn<A, B, C, D, E, F, G>(),
@@ -191,6 +208,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E, F, G>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E, F, G>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E, F, G>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E, F, G>(a, b, c, d, e, f, g, h, i, j),
       ),
       $8: <A, B, C, D, E, F, G, H>() => $params(
         $0: () => fn<A, B, C, D, E, F, G, H>(),
@@ -203,6 +221,7 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E, F, G, H>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E, F, G, H>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E, F, G, H>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E, F, G, H>(a, b, c, d, e, f, g, h, i, j),
       ),
       $9: <A, B, C, D, E, F, G, H, I>() => $params(
         $0: () => fn<A, B, C, D, E, F, G, H, I>(),
@@ -215,6 +234,20 @@ class TypeSwitcher {
         $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E, F, G, H, I>(a, b, c, d, e, f, g),
         $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E, F, G, H, I>(a, b, c, d, e, f, g, h),
         $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E, F, G, H, I>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E, F, G, H, I>(a, b, c, d, e, f, g, h, i, j),
+      ),
+      $10: <A, B, C, D, E, F, G, H, I, J>() => $params(
+        $0: () => fn<A, B, C, D, E, F, G, H, I, J>(),
+        $1: (a) => fn<A, B, C, D, E, F, G, H, I, J>(a),
+        $2: (a, b) => fn<A, B, C, D, E, F, G, H, I, J>(a, b),
+        $3: (a, b, c) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c),
+        $4: (a, b, c, d) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d),
+        $5: (a, b, c, d, e) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e),
+        $6: (a, b, c, d, e, f) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f),
+        $7: (a, b, c, d, e, f, g) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f, g),
+        $8: (a, b, c, d, e, f, g, h) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f, g, h),
+        $9: (a, b, c, d, e, f, g, h, i) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f, g, h, i),
+        $10: (a, b, c, d, e, f, g, h, i, j) => fn<A, B, C, D, E, F, G, H, I, J>(a, b, c, d, e, f, g, h, i, j),
       ),
     );
   }

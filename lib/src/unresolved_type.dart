@@ -14,6 +14,7 @@ class UnresolvedType {
       7 => <A, B, C, D, E, F, G>(f) => f<UnresolvedType>(),
       8 => <A, B, C, D, E, F, G, H>(f) => f<UnresolvedType>(),
       9 => <A, B, C, D, E, F, G, H, I>(f) => f<UnresolvedType>(),
+      10 => <A, B, C, D, E, F, G, H, I, J>(f) => f<UnresolvedType>(),
       _ => throw Exception('TypePlus only supports generic classes with up to 10 type arguments.'),
     };
   }
