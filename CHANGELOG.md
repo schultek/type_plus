@@ -1,3 +1,7 @@
+# 2.1.1
+
+- Fixed bug with generic type ids containing `dynamic`.
+
 # 2.1.0
 
 - Ignore whitespaces in type ids.

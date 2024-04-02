@@ -70,7 +70,7 @@ class ResolvedType {
 
   String get id {
     var nullSuffix = isNullable ? '?' : '';
-    if (args.isNotEmpty && args.any((t) => t.reversed != dynamic)) {
+    if (args.isNotEmpty) {
       return '${base.baseId}<${args.map((r) => r.id).join(',')}>$nullSuffix';
     } else {
       return '$baseId$nullSuffix';

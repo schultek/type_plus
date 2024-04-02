@@ -60,6 +60,8 @@ void main() {
 
     test('type composition works', () {
       expect(TypePlus.fromId('Future<int>'), equals(typeOf<Future<int>>()));
+      expect(TypePlus.fromId('Future<dynamic>'), equals(typeOf<Future<dynamic>>()));
+      expect(TypePlus.fromId('Future<dynamic>').id, equals('Future<dynamic>'));
 
       expect((int).provideTo(<T>() => T.id), equals('int'));
       expect(typeOf<Iterable<num>>().provideTo(<T>() => T.args.first), equals(num));
